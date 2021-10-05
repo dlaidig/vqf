@@ -53,7 +53,8 @@ setup(
     python_requires='>=3.7',  # needed for dataclasses in PyVQF
     extras_require={
         # pip3 install --user -e ".[dev]"
-        'dev': ['tox', 'pytest', 'pytest-flake8', 'reuse', 'transplant', 'oct2py', 'scipy', 'breathe', 'matplotlib'],
+        'dev': ['tox', 'pytest', 'pytest-flake8', 'reuse', 'transplant', 'oct2py', 'scipy', 'breathe', 'matplotlib',
+                'sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-matlabdomain'],
     },
     ext_modules=ext_modules,
     include_dirs=[np.get_include()],
