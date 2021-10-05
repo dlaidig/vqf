@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2021 Daniel Laidig <laidig@control.tu-berlin.de>
+#
+# SPDX-License-Identifier: MIT
+
+[build-system]
+requires = ["setuptools", "wheel", "Cython >= 0.29.21", "numpy >= 1.20.0"]
+build-backend = "setuptools.build_meta"

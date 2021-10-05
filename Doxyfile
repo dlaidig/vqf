@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2021 Daniel Laidig <laidig@control.tu-berlin.de>
+#
+# SPDX-License-Identifier: MIT
+
+PROJECT_NAME           = "VQF"
+PROJECT_BRIEF          = "This is a dummy repo for testing. Real code coming soon."
+
+OUTPUT_DIRECTORY       = build/doxygen
+
+EXTRACT_ALL            = YES
+
+INPUT                  = vqf/cpp
+RECURSIVE              = NO
+
+USE_MATHJAX            = YES
+GENERATE_XML           = YES
+
+ALIASES += "rst=\verbatim embed:rst:leading-asterisk"
+ALIASES += "endrst=\endverbatim"

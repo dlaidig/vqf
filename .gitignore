@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2021 Daniel Laidig <laidig@control.tu-berlin.de>
+#
+# SPDX-License-Identifier: MIT
+
+*~
+__pycache__/
+CMakeLists.txt.user
+/vqf/cpp/libvqf.so
+/vqf/vqf.cpp
+/vqf/vqf.cpython-*.so
+/build/
+/vqf.egg-info/

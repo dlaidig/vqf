@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: VQF
+Upstream-Contact: Daniel Laidig <laidig@control.tu-berlin.de>
+Source: https://github.com/dlaidig/vqf
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...
