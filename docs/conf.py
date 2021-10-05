@@ -8,7 +8,7 @@ import os
 import subprocess
 
 # always run doxygen automatically and abort if there is an error
-subprocess.check_call('cd ..; doxygen', shell=True)
+subprocess.check_call('cd .. && mkdir -p build/doxygen && doxygen', shell=True)
 
 project = 'VQF'
 copyright = '2021, Daniel Laidig'
