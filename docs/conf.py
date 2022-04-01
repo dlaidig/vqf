@@ -13,7 +13,6 @@ subprocess.check_call('cd .. && mkdir -p build/doxygen && doxygen', shell=True)
 project = 'VQF'
 copyright = '2021, Daniel Laidig'
 author = 'Daniel Laidig'
-release = '0.1'
 
 extensions = [
     'sphinx_rtd_theme',
