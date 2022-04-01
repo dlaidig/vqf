@@ -2,11 +2,18 @@
 #
 # SPDX-License-Identifier: MIT
 
+/.idea/
 *~
 __pycache__/
+/.tox/
+/build/
+/dist/
+/vqf.egg-info/
+/venv/
+/vqf/build-cpp-*/
 CMakeLists.txt.user
 /vqf/cpp/libvqf.so
 /vqf/vqf.cpp
+/vqf/basicvqf.cpp
 /vqf/vqf.cpython-*.so
-/build/
-/vqf.egg-info/
+/vqf/basicvqf.cpython-*.so

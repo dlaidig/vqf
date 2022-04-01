@@ -7,7 +7,11 @@
 .. mat:module:: matlab
     :noindex:
 
-Getting Started
-===============
+vqf.offlineVQF
+##############
 
-This is a dummy repo for testing. Real code coming soon.
+
+.. autofunction:: offlineVQF
+
+..
+    in the worst case, we can specify the member order manually: :members: norm, getQuat6D, clip

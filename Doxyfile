@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 PROJECT_NAME           = "VQF"
-PROJECT_BRIEF          = "This is a dummy repo for testing. Real code coming soon."
+PROJECT_BRIEF          = "A Versatile Quaternion-based Filter for IMU Orientation Estimation"
 
 OUTPUT_DIRECTORY       = build/doxygen
 

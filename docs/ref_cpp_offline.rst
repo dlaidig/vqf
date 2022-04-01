@@ -7,14 +7,7 @@
 .. mat:module:: matlab
     :noindex:
 
-VQF Class
-#########
+offlineVQF
+##########
 
-.. doxygentypedef:: vqf_real_t
-
-.. doxygenclass:: VQF
-   :members:
-   :protected-members:
-   :private-members:
-   :undoc-members:
-
+.. doxygenfunction:: offlineVQF

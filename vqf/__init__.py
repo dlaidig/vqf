@@ -2,11 +2,9 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .vqf import VQF
+from .vqf import VQF, offlineVQF
+from .basicvqf import BasicVQF
 from .pyvqf import PyVQF
 from .utils import get_cpp_path, get_matlab_path
 
-import sys
-print('vqf: This is a dummy repo for testing. Real code coming soon.', file=sys.stderr)
-
-__all__ = ['VQF', 'PyVQF', 'get_cpp_path', 'get_matlab_path']
+__all__ = ['VQF', 'BasicVQF', 'offlineVQF', 'PyVQF', 'get_cpp_path', 'get_matlab_path']

@@ -7,14 +7,14 @@
 .. mat:module:: matlab
     :noindex:
 
-vqf.VQF
-#######
+vqf.BasicVQF
+############
 
 ..
     Note that the :members: are specified manually in order to ensure that the members are ordered by source which is
     otherwise not possible with Cython modules.
 
-.. autoclass:: VQF
+.. autoclass:: BasicVQF
     :members: updateGyr,
         updateAcc,
         updateMag,
@@ -25,20 +25,8 @@ vqf.VQF
         getQuat6D,
         getQuat9D,
         getDelta,
-        getBiasEstimate,
-        setBiasEstimate,
-        getRestDetected,
-        getMagDistDetected,
-        getRelativeRestDeviations,
-        getMagRefNorm,
-        getMagRefDip,
-        setMagRef,
         setTauAcc,
         setTauMag,
-        setMotionBiasEstEnabled,
-        setRestBiasEstEnabled,
-        setMagDistRejectionEnabled,
-        setRestDetectionThresholds,
         params,
         coeffs,
         state,
@@ -56,12 +44,7 @@ vqf.VQF
         filterInitialState,
         filterAdaptStateForCoeffChange,
         filterStep,
-        filterVec,
-        matrix3SetToScaledIdentity,
-        matrix3Multiply,
-        matrix3MultiplyTpsFirst,
-        matrix3MultiplyTpsSecond,
-        matrix3Inv
+        filterVec
 
     **Update Methods**
 
@@ -73,31 +56,19 @@ vqf.VQF
         updateBatch
         updateBatchFullState
 
-    **Methods to Get/Set State**
+    **Methods to Get State**
 
     .. autosummary::
         getQuat3D
         getQuat6D
         getQuat9D
         getDelta
-        getBiasEstimate
-        setBiasEstimate
-        getRestDetected
-        getMagDistDetected
-        getRelativeRestDeviations
-        getMagRefNorm
-        getMagRefDip
-        setMagRef
 
     **Methods to Change Parameters**
 
     .. autosummary::
         setTauAcc
         setTauMag
-        setMotionBiasEstEnabled
-        setRestBiasEstEnabled
-        setMagDistRejectionEnabled
-        setRestDetectionThresholds
 
     **Access to Full Params/Coeffs/State**
 
@@ -124,8 +95,3 @@ vqf.VQF
         filterAdaptStateForCoeffChange
         filterStep
         filterVec
-        matrix3SetToScaledIdentity
-        matrix3Multiply
-        matrix3MultiplyTpsFirst
-        matrix3MultiplyTpsSecond
-        matrix3Inv

@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2021 Daniel Laidig <laidig@control.tu-berlin.de>
+#
+# SPDX-License-Identifier: MIT
+
+"""
+As an additional option for cases in which installing the package using pip is not possible, this file *might* make
+it possible to compile and import the C++ version on the fly.
+
+    sys.path.append('path/to/vqf/')
+    import pyximport
+    pyximport.install()
+    from vqf import VQF
+"""
+
+from pathlib import Path
+import numpy as np
+
+
+def make_ext(modname, pyxfilename):
+    from distutils.extension import Extension
+    p = Path(__file__).resolve().parent
+    return Extension(
+        name=modname,
+        sources=[pyxfilename, 'cpp/vqf.cpp', 'cpp/offline_vqf.cpp'],
+        include_dirs=[str(p), np.get_include()],
+        language='c++'
+    )

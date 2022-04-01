@@ -2,12 +2,46 @@
 ..
 .. SPDX-License-Identifier: MIT
 
-VQF dummy repo
-==============
+VQF: A Versatile Quaternion-based Filter for IMU Orientation Estimation
+=======================================================================
 
 |tests| |build| |docs| |version| |python| |format| |license| |downloads|
 
-This is a dummy repo for testing. Real code coming soon.
+This is the implementation of the IMU orientation estimation filter described in the following publication:
+
+    D. Laidig, T. Seel. "VQF: Highly Accurate IMU Orientation Estimation with Bias Estimation and Magnetic
+    Disturbance Rejection." arXiv preprint, 2022. `arXiv:2203.17024 <https://arxiv.org/abs/2203.17024>`_.
+
+The filter can perform simultaneous 6D (magnetometer-free) and 9D (gyr+acc+mag) sensor fusion and can also be used
+without magnetometer data. Different sampling rates for gyroscopes, accelerometers, and magnetometers are
+supported as well. While in most cases, the defaults will be reasonable, the algorithm can be influenced via two
+tuning parameters.
+
+Documentation
+-------------
+
+Detailed documentation can be found at https://vqf.readthedocs.io/.
+
+Installation
+------------
+
+The VQF Python package can easily be installed from PyPI via pip, e.g.:
+
+.. code-block:: sh
+
+    pip install vqf
+
+For more information, please refer to the `documentation <https://vqf.readthedocs.io/>`__.
+
+License
+-------
+
+VQF is licensed under the terms of the `MIT license <https://spdx.org/licenses/MIT.html>`__.
+
+Contact
+-------
+
+Daniel Laidig <laidig at control.tu-berlin.de>
 
 
 .. |tests| image:: https://img.shields.io/github/workflow/status/dlaidig/vqf/Tests?label=tests

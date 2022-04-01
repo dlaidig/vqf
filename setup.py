@@ -14,10 +14,11 @@ from Cython.Build import cythonize
 import numpy as np
 
 # workaround for develop mode (pip install -e) with PEP517/pyproject.toml cf. https://github.com/pypa/pip/issues/7953
-site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
+site.ENABLE_USER_SITE = '--user' in sys.argv[1:]
 
 ext_modules = cythonize([
     'vqf/vqf.pyx',
+    'vqf/basicvqf.pyx',
 ])
 
 for m in ext_modules:
@@ -25,9 +26,9 @@ for m in ext_modules:
 
 setup(
     name='vqf',
-    version='0.0.1',
+    version='1.0.0',
 
-    description='This is a dummy repo for testing. Real code coming soon.',
+    description='A Versatile Quaternion-based Filter for IMU Orientation Estimation',
     long_description=open('README.rst').read(),
     long_description_content_type="text/x-rst",
     url='https://github.com/dlaidig/vqf/',
@@ -39,7 +40,7 @@ setup(
     author_email='laidig@control.tu-berlin.de',
     license='MIT',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
@@ -53,7 +54,8 @@ setup(
     python_requires='>=3.7',  # needed for dataclasses in PyVQF
     extras_require={
         # pip3 install --user -e ".[dev]"
-        'dev': ['tox', 'pytest', 'pytest-flake8', 'reuse', 'transplant', 'oct2py', 'scipy', 'breathe', 'matplotlib',
+        'dev': ['tox', 'pytest', 'pytest-flake8', 'flake8<4',  # https://github.com/tholo/pytest-flake8/issues/81
+                'reuse', 'transplant', 'oct2py', 'scipy', 'breathe', 'matplotlib',
                 'sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-matlabdomain'],
     },
     ext_modules=ext_modules,

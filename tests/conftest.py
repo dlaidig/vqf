@@ -5,10 +5,33 @@
 import atexit
 import os
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 import numpy as np
 import pytest
 import vqf
+
+
+@dataclass
+class ImuData:
+    gyr: np.ndarray
+    acc: np.ndarray
+    mag: np.ndarray
+    sampling_rate: float
+
+    def __repr__(self):
+        return f'ImuData(N={self.gyr.shape[0]}, sampling_rate={round(self.sampling_rate, 3)})'
+
+
+@pytest.fixture(scope='session')
+def imu_data():
+    f = np.load(os.path.join(os.path.dirname(__file__), 'imu_data.npz'))
+    gyr = np.ascontiguousarray(f['gyr'].astype(float))
+    acc = np.ascontiguousarray(f['acc'].astype(float))
+    mag = np.ascontiguousarray(f['mag'].astype(float))
+    sampling_rate = f['sampling_rate'].astype(float).item()
+    f.close()
+    return ImuData(gyr, acc, mag, sampling_rate)
 
 
 def pytest_addoption(parser):
@@ -27,7 +50,9 @@ class AbstractMatlabWrapper(ABC):
     """
     is_matlab = True
 
-    nargoutMap = {}
+    nargoutMap = dict(filterCoeffs=2, filterVec=2, updateGyr=0, getBiasEstimate=2, setBiasEstimate=0,
+                      setRestBiasEstEnabled=0, setMotionBiasEstEnabled=0, setMagDistRejectionEnabled=0, setMagRef=0,
+                      setTauAcc=0, setTauMag=0)
 
     def __init__(self, instance):
         self.m = instance
@@ -97,9 +122,8 @@ class MatlabVQF(AbstractMatlabWrapper):
         return self.m.eval(f'@(varargin) VQF.{name}(varargin{{:}})')(*args, nargout=nargout)
 
     def createObject(self, args, kwargs):
-        # import transplant
-        # obj = self.m.VQF(*args, transplant.MatlabStruct(kwargs))
-        obj = self.m.VQF()  # temporary for dummy
+        import transplant
+        obj = self.m.VQF(*args, transplant.MatlabStruct(kwargs))
         self.instances.append(obj)
         return obj
 
@@ -121,9 +145,8 @@ class OctaveVQF(AbstractMatlabWrapper):
 
     def createObject(self, args, kwargs):
         name = f'obj{self.next}'
-        # self.m.push('tmp', tuple(args) + tuple([kwargs]))  # tuples are converted to cell arrays
-        # self.m.eval(f'{name}=VQF(tmp{{:}});')
-        self.m.eval(f'{name}=VQF();')  # temporary for dummy
+        self.m.push('tmp', tuple(args) + tuple([kwargs]))  # tuples are converted to cell arrays
+        self.m.eval(f'{name}=VQF(tmp{{:}});')
         self.next += 1
         return name
 
@@ -157,6 +180,8 @@ atexit.register(_exitMatlab)
 def cls(request):
     if request.param == 'VQF':
         return vqf.VQF
+    elif request.param == 'BasicVQF':
+        return vqf.BasicVQF
     elif request.param == 'PyVQF':
         return vqf.PyVQF
     elif request.param == 'MatlabVQF':

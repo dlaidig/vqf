@@ -6,4 +6,5 @@ include vqf/*.pyx
 include vqf/*.pyxbld
 include vqf/cpp/*.cpp
 include vqf/cpp/*.hpp
+include vqf/cpp/CMakeLists.txt
 include vqf/matlab/VQF.m
