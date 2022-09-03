@@ -42,11 +42,6 @@ BasicVQF::BasicVQF(const BasicVQFParams &params, vqf_real_t gyrTs, vqf_real_t ac
     setup();
 }
 
-BasicVQF::~BasicVQF()
-{
-
-}
-
 void BasicVQF::updateGyr(const vqf_real_t gyr[3])
 {
     // gyroscope prediction step

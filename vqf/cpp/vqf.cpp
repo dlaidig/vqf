@@ -71,11 +71,6 @@ VQF::VQF(const VQFParams &params, vqf_real_t gyrTs, vqf_real_t accTs, vqf_real_t
     setup();
 }
 
-VQF::~VQF()
-{
-
-}
-
 void VQF::updateGyr(const vqf_real_t gyr[3])
 {
     // rest detection
