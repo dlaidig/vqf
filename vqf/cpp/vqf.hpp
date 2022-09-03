@@ -662,7 +662,6 @@ public:
      * @param magTs sampling time of the magnetometer measurements in seconds (the value of `gyrTs` is used if set to -1)
      */
     VQF(const VQFParams& params, vqf_real_t gyrTs, vqf_real_t accTs=-1.0, vqf_real_t magTs=-1.0);
-    ~VQF();
 
     /**
      * @brief Performs gyroscope update step.
