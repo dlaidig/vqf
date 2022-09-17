@@ -113,7 +113,6 @@ classdef VQF < handle
             'restFilterTau', 0.5, ...
             'restThGyr', 2.0, ...
             'restThAcc', 0.5, ...
-            'restThMag', 0.1, ...
             'magCurrentTau', 0.05, ...
             'magRefTau', 20.0, ...
             'magNormTh', 0.1, ...
@@ -147,8 +146,6 @@ classdef VQF < handle
             'restGyrLpState', NaN(2, 3), ...
             'restLastAccLp', [0 0 0], ...
             'restAccLpState', NaN(2, 3), ...
-            'restLastMagLp', [0 0 0], ...
-            'restMagLpState', NaN(2, 3), ...
             'magRefNorm', 0.0, ...
             'magRefDip', 0.0, ...
             'magUndisturbedT', 0.0, ...
@@ -175,8 +172,6 @@ classdef VQF < handle
             'restGyrLpA', NaN(1, 2), ...
             'restAccLpB', NaN(1, 3), ...
             'restAccLpA', NaN(1, 2), ...
-            'restMagLpB', NaN(1, 3), ...
-            'restMagLpA', NaN(1, 2), ...
             'kMagRef', -1.0, ...
             'magNormDipLpB', NaN(1, 3), ...
             'magNormDipLpA', NaN(1, 2) ...
@@ -415,23 +410,6 @@ classdef VQF < handle
             end
 
             magTs = obj.coeffs.magTs;
-
-            % rest detection
-            if obj.params.restBiasEstEnabled
-                [magLp, obj.state.restMagLpState] = obj.filterVec(mag, obj.params.restFilterTau, magTs, ...
-                    obj.coeffs.restMagLpB, obj.coeffs.restMagLpA, obj.state.restMagLpState);
-
-                deviation = mag - magLp;
-                squaredDeviation = dot(deviation, deviation);
-
-                magNormSquared = dot(magLp, magLp);
-                if squaredDeviation >= obj.params.restThMag^2*magNormSquared
-                    obj.state.restT = 0.0;
-                    obj.state.restDetected = false;
-                end
-                obj.state.restLastMagLp = magLp;
-                obj.state.restLastSquaredDeviations(3) = squaredDeviation;
-            end
 
             % bring magnetometer measurement into 6D earth frame
             magEarth = obj.quatRotate(obj.getQuat6D(), mag);
@@ -681,16 +659,14 @@ classdef VQF < handle
             % Returns the relative deviations used in rest detection.
             %
             % Looking at those values can be useful to understand how rest detection is working and which thresholds are
-            % suitable. The output array is filled with the last values for gyroscope, accelerometer, and magnetometer,
-            % relative to the threshold. In order for rest to be detected, all values must stay below 1.
+            % suitable. The output array is filled with the last values for gyroscope and accelerometer,
+            % relative to the threshold. In order for rest to be detected, both values must stay below 1.
             %
-            % :return: relative rest deviations as 3x1 matrix
+            % :return: relative rest deviations as 2x1 matrix
 
-            magNormSquared = dot(obj.state.restLastMagLp, obj.state.restLastMagLp);
             out = [
                 sqrt(obj.state.restLastSquaredDeviations(1)) / (obj.params.restThGyr*pi/180.0),
-                sqrt(obj.state.restLastSquaredDeviations(2)) / obj.params.restThAcc,
-                sqrt(obj.state.restLastSquaredDeviations(3)/magNormSquared) / obj.params.restThMag
+                sqrt(obj.state.restLastSquaredDeviations(2)) / obj.params.restThAcc
             ];
         end
         function magRefNorm = getMagRefNorm(obj)
@@ -767,8 +743,6 @@ classdef VQF < handle
             obj.state.restGyrLpState = NaN(2, 3);
             obj.state.restLastAccLp = [0 0 0];
             obj.state.restAccLpState = NaN(2, 3);
-            obj.state.restLastMagLp = [0 0 0];
-            obj.state.restMagLpState = NaN(2, 3);
         end
         function setMagDistRejectionEnabled(obj, enabled)
             % Enables/disables magnetic disturbance detection and rejection.
@@ -787,15 +761,13 @@ classdef VQF < handle
             obj.state.magNormDip = [0 0];
             obj.state.magNormDipLpState = NaN(2, 2);
         end
-        function setRestDetectionThresholds(obj, thGyr, thAcc, thMag)
+        function setRestDetectionThresholds(obj, thGyr, thAcc)
             % Sets the current thresholds for rest detection.
             %
             % :param thGyr: new value for :cpp:member:`VQFParams::restThGyr`
             % :param thAcc: new value for :cpp:member:`VQFParams::restThAcc`
-            % :param thMag: new value for :cpp:member:`VQFParams::restThMag`
             obj.params.restThGyr = thGyr;
             obj.params.restThAcc = thAcc;
-            obj.params.restThMag = thMag;
         end
         function resetState(obj)
             % Resets the state to the default values at initialization.
@@ -828,8 +800,6 @@ classdef VQF < handle
             obj.state.restGyrLpState = NaN(2, 3);
             obj.state.restLastAccLp = [0 0 0];
             obj.state.restAccLpState = NaN(2, 3);
-            obj.state.restLastMagLp = [0 0 0];
-            obj.state.restMagLpState = NaN(2, 3);
 
             obj.state.magRefNorm = 0.0;
             obj.state.magRefDip = 0.0;

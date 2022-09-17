@@ -30,7 +30,6 @@ class PyVQFParams:
     restFilterTau: float = 0.5
     restThGyr: float = 2.0
     restThAcc: float = 0.5
-    restThMag: float = 0.1
     magCurrentTau: float = 0.05
     magRefTau: float = 20.0
     magNormTh: float = 0.1
@@ -65,14 +64,12 @@ class PyVQFState:
     motionBiasEstRLpState: np.ndarray = field(default_factory=lambda: np.full((2, 9), np.nan, float))
     motionBiasEstBiasLpState: np.ndarray = field(default_factory=lambda: np.full((2, 2), np.nan, float))
 
-    restLastSquaredDeviations: np.ndarray = field(default_factory=lambda: np.zeros(3, float))
+    restLastSquaredDeviations: np.ndarray = field(default_factory=lambda: np.zeros(2, float))
     restT: float = 0.0
     restLastGyrLp: np.ndarray = field(default_factory=lambda: np.zeros(3, float))
     restGyrLpState: np.ndarray = field(default_factory=lambda: np.full((2, 3), np.nan, float))
     restLastAccLp: np.ndarray = field(default_factory=lambda: np.zeros(3, float))
     restAccLpState: np.ndarray = field(default_factory=lambda: np.full((2, 3), np.nan, float))
-    restLastMagLp: np.ndarray = field(default_factory=lambda: np.zeros(3, float))
-    restMagLpState: np.ndarray = field(default_factory=lambda: np.full((2, 3), np.nan, float))
 
     magRefNorm: float = 0.0
     magRefDip: float = 0.0
@@ -106,8 +103,6 @@ class PyVQFCoefficients:
     restGyrLpA: np.ndarray = field(default_factory=lambda: np.full(2, np.nan, float))
     restAccLpB: np.ndarray = field(default_factory=lambda: np.full(3, np.nan, float))
     restAccLpA: np.ndarray = field(default_factory=lambda: np.full(2, np.nan, float))
-    restMagLpB: np.ndarray = field(default_factory=lambda: np.full(3, np.nan, float))
-    restMagLpA: np.ndarray = field(default_factory=lambda: np.full(2, np.nan, float))
 
     kMagRef: float = -1.0
     magNormDipLpB: np.ndarray = field(default_factory=lambda: np.full(3, np.nan, float))
@@ -392,22 +387,6 @@ class PyVQF:
 
         magTs = self._coeffs.magTs
 
-        # rest detection
-        if self._params.restBiasEstEnabled:
-            magLp = self.filterVec(mag, self._params.restFilterTau, magTs, self._coeffs.restMagLpB,
-                                   self._coeffs.restMagLpA, self._state.restMagLpState)
-
-            deviation = mag - magLp
-            squaredDeviation = deviation.dot(deviation)
-
-            magNormSquared = magLp.dot(magLp)
-            if squaredDeviation >= self._params.restThMag**2*magNormSquared:
-                self._state.restT = 0.0
-                self._state.restDetected = False
-
-            self._state.restLastMagLp = magLp
-            self._state.restLastSquaredDeviations[2] = squaredDeviation
-
         # bring magnetometer measurement into 6D earth frame
         magEarth = self.quatRotate(self.getQuat6D(), mag)
 
@@ -643,16 +622,14 @@ class PyVQF:
         """Returns the relative deviations used in rest detection.
 
          Looking at those values can be useful to understand how rest detection is working and which thresholds are
-         suitable. The output array is filled with the last values for gyroscope, accelerometer, and magnetometer,
-         relative to the threshold. In order for rest to be detected, all values must stay below 1.
+         suitable. The output array is filled with the last values for gyroscope and accelerometer,
+         relative to the threshold. In order for rest to be detected, both values must stay below 1.
 
-        :return: relative rest deviations as (3,) numpy array
+        :return: relative rest deviations as (2,) numpy array
         """
-        magNormSquared = self._state.restLastMagLp.dot(self._state.restLastMagLp)
         return np.array([
             np.sqrt(self._state.restLastSquaredDeviations[0]) / (self._params.restThGyr * np.pi / 180.0),
             np.sqrt(self._state.restLastSquaredDeviations[1]) / self._params.restThAcc,
-            np.sqrt(self._state.restLastSquaredDeviations[2] / magNormSquared) / self._params.restThMag,
         ], float)
 
     def getMagRefNorm(self):
@@ -726,8 +703,6 @@ class PyVQF:
         self._state.restGyrLpState = np.full((2, 3), np.nan, float)
         self._state.restLastAccLp = np.zeros(3, float)
         self._state.restAccLpState = np.full((2, 3), np.nan, float)
-        self._state.restLastMagLp = np.zeros(3, float)
-        self._state.restMagLpState = np.full((2, 3), np.nan, float)
 
     def setMagDistRejectionEnabled(self, enabled):
         """Enables/disables magnetic disturbance detection and rejection."""
@@ -745,16 +720,14 @@ class PyVQF:
         self._state.magNormDip = np.zeros(2, float)
         self._state.magNormDipLpState = np.full((2, 2), np.nan, float)
 
-    def setRestDetectionThresholds(self, thGyr, thAcc, thMag):
+    def setRestDetectionThresholds(self, thGyr, thAcc):
         """Sets the current thresholds for rest detection.
 
         :param thGyr: new value for :cpp:member:`VQFParams::restThGyr`
         :param thAcc: new value for :cpp:member:`VQFParams::restThAcc`
-        :param thMag: new value for :cpp:member:`VQFParams::restThMag`
         """
         self._params.restThGyr = thGyr
         self._params.restThAcc = thAcc
-        self._params.restThMag = thMag
 
     @property
     def params(self):
@@ -1078,7 +1051,6 @@ class PyVQF:
 
         coeffs.restGyrLpB, coeffs.restGyrLpA = self.filterCoeffs(params.restFilterTau, coeffs.gyrTs)
         coeffs.restAccLpB, coeffs.restAccLpA = self.filterCoeffs(params.restFilterTau, coeffs.accTs)
-        coeffs.restMagLpB, coeffs.restMagLpA = self.filterCoeffs(params.restFilterTau, coeffs.magTs)
 
         coeffs.kMagRef = self.gainFromTau(params.magRefTau, coeffs.magTs)
         if params.magCurrentTau > 0:

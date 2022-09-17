@@ -35,7 +35,6 @@ cdef extern from 'cpp/vqf.hpp':
         vqf_real_t restFilterTau
         vqf_real_t restThGyr
         vqf_real_t restThAcc
-        vqf_real_t restThMag
         vqf_real_t magCurrentTau
         vqf_real_t magRefTau
         vqf_real_t magNormTh
@@ -63,14 +62,12 @@ cdef extern from 'cpp/vqf.hpp':
         vqf_real_t biasP[9]
         double motionBiasEstRLpState[9*2]
         double motionBiasEstBiasLpState[2*2]
-        vqf_real_t restLastSquaredDeviations[3]
+        vqf_real_t restLastSquaredDeviations[2]
         vqf_real_t restT
         vqf_real_t restLastGyrLp[3]
         double restGyrLpState[3*2]
         vqf_real_t restLastAccLp[3]
         double restAccLpState[3*2]
-        vqf_real_t restLastMagLp[3]
-        double restMagLpState[3*2]
         vqf_real_t magRefNorm
         vqf_real_t magRefDip
         vqf_real_t magUndisturbedT
@@ -97,8 +94,6 @@ cdef extern from 'cpp/vqf.hpp':
         double restGyrLpA[2]
         double restAccLpB[3]
         double restAccLpA[2]
-        double restMagLpB[3]
-        double restMagLpA[2]
         vqf_real_t kMagRef
         double magNormDipLpB[3]
         double magNormDipLpA[2]
@@ -124,7 +119,7 @@ cdef extern from 'cpp/vqf.hpp':
         vqf_real_t getBiasEstimate(vqf_real_t out[3]) const
         void setBiasEstimate(vqf_real_t bias[3], vqf_real_t sigma)
         bool getRestDetected() const
-        void getRelativeRestDeviations(vqf_real_t out[3]) const
+        void getRelativeRestDeviations(vqf_real_t out[2]) const
         bool getMagDistDetected() const
         vqf_real_t getMagRefNorm() const
         vqf_real_t getMagRefDip() const
@@ -135,7 +130,7 @@ cdef extern from 'cpp/vqf.hpp':
         void setMotionBiasEstEnabled(bool enabled)
         void setRestBiasEstEnabled(bool enabled)
         void setMagDistRejectionEnabled(bool enabled)
-        void setRestDetectionThresholds(vqf_real_t thGyr, vqf_real_t thAcc, vqf_real_t thMag)
+        void setRestDetectionThresholds(vqf_real_t thGyr, vqf_real_t thAcc)
 
         const VQFParams& getParams() const
         const VQFCoefficients& getCoeffs() const
@@ -249,7 +244,7 @@ cdef class VQF:
                   motionBiasEstEnabled=None, restBiasEstEnabled=None, magDistRejectionEnabled=None,
                   biasSigmaInit=None, biasForgettingTime=None, biasClip=None,
                   biasSigmaMotion=None, biasVerticalForgettingFactor=None,
-                  biasSigmaRest=None, restMinT=None, restFilterTau=None, restThGyr=None, restThAcc=None, restThMag=None,
+                  biasSigmaRest=None, restMinT=None, restFilterTau=None, restThGyr=None, restThAcc=None,
                   magCurrentTau=None, magRefTau=None, magNormTh=None, magDipTh=None, magNewTime=None,
                   magNewFirstTime=None, magNewMinGyr=None, magMinUndisturbedTime=None, magMaxRejectionTime=None,
                   magRejectionFactor=None):
@@ -284,8 +279,6 @@ cdef class VQF:
             params.restThGyr = restThGyr
         if restThAcc is not None:
             params.restThAcc = restThAcc
-        if restThMag is not None:
-            params.restThMag = restThMag
         if magCurrentTau is not None:
             params.magCurrentTau = magCurrentTau
         if magRefTau is not None:
@@ -314,7 +307,7 @@ cdef class VQF:
                  motionBiasEstEnabled=None, restBiasEstEnabled=None, magDistRejectionEnabled=None,
                  biasSigmaInit=None, biasForgettingTime=None, biasClip=None,
                  biasSigmaMotion=None, biasVerticalForgettingFactor=None,
-                 biasSigmaRest=None, restMinT=None, restFilterTau=None, restThGyr=None, restThAcc=None, restThMag=None,
+                 biasSigmaRest=None, restMinT=None, restFilterTau=None, restThGyr=None, restThAcc=None,
                  magCurrentTau=None, magRefTau=None, magNormTh=None, magDipTh=None, magNewTime=None,
                  magNewFirstTime=None, magNewMinGyr=None, magMinUndisturbedTime=None, magMaxRejectionTime=None,
                  magRejectionFactor=None):
@@ -493,15 +486,13 @@ cdef class VQF:
         cdef np.ndarray[vqf_real_t, ndim=1, mode='c'] biasSigma = np.empty(shape=(N,), dtype=vqf_real)
         cdef np.ndarray[double, ndim=2, mode='c'] motionBiasEstRLpState = np.empty(shape=(N, 9*2), dtype=np.float64)
         cdef np.ndarray[double, ndim=2, mode='c'] motionBiasEstBiasLpState = np.empty(shape=(N, 2*2), dtype=np.float64)
-        cdef np.ndarray[vqf_real_t, ndim=2, mode='c'] restLastSquaredDeviations = np.empty(shape=(N, 3), dtype=vqf_real)
-        cdef np.ndarray[vqf_real_t, ndim=2, mode='c'] relativeRestDeviations = np.empty(shape=(N, 3), dtype=vqf_real)
+        cdef np.ndarray[vqf_real_t, ndim=2, mode='c'] restLastSquaredDeviations = np.empty(shape=(N, 2), dtype=vqf_real)
+        cdef np.ndarray[vqf_real_t, ndim=2, mode='c'] relativeRestDeviations = np.empty(shape=(N, 2), dtype=vqf_real)
         cdef np.ndarray[vqf_real_t, ndim=1, mode='c'] restT = np.empty(shape=(N,), dtype=vqf_real)
         cdef np.ndarray[vqf_real_t, ndim=2, mode='c'] restLastGyrLp = np.empty(shape=(N, 3), dtype=vqf_real)
         cdef np.ndarray[double, ndim=2, mode='c'] restGyrLpState = np.empty(shape=(N, 3*2), dtype=np.float64)
         cdef np.ndarray[vqf_real_t, ndim=2, mode='c'] restLastAccLp = np.empty(shape=(N, 3), dtype=vqf_real)
         cdef np.ndarray[double, ndim=2, mode='c'] restAccLpState = np.empty(shape=(N, 3*2), dtype=np.float64)
-        cdef np.ndarray[vqf_real_t, ndim=2, mode='c'] restLastMagLp = np.empty(shape=(N, 3), dtype=vqf_real)
-        cdef np.ndarray[double, ndim=2, mode='c'] restMagLpState = np.empty(shape=(N, 3*2), dtype=np.float64)
         cdef np.ndarray[vqf_real_t, ndim=1, mode='c'] magRefNorm = np.empty(shape=(N,), dtype=vqf_real)
         cdef np.ndarray[vqf_real_t, ndim=1, mode='c'] magRefDip = np.empty(shape=(N,), dtype=vqf_real)
         cdef np.ndarray[vqf_real_t, ndim=1, mode='c'] magUndisturbedT = np.empty(shape=(N,), dtype=vqf_real)
@@ -545,16 +536,14 @@ cdef class VQF:
                    9*2*sizeof(double))
             memcpy(<double*> np.PyArray_DATA(motionBiasEstBiasLpState)+2*2*i, state.motionBiasEstBiasLpState,
                    2*2*sizeof(double))
-            memcpy(<vqf_real_t*> np.PyArray_DATA(restLastSquaredDeviations)+3*i, state.restLastSquaredDeviations,
-                   3*sizeof(vqf_real_t))
-            self.c_obj.getRelativeRestDeviations((<vqf_real_t *> np.PyArray_DATA(relativeRestDeviations)) + 3*i)
+            memcpy(<vqf_real_t*> np.PyArray_DATA(restLastSquaredDeviations)+2*i, state.restLastSquaredDeviations,
+                   2*sizeof(vqf_real_t))
+            self.c_obj.getRelativeRestDeviations((<vqf_real_t *> np.PyArray_DATA(relativeRestDeviations)) + 2*i)
             restT[i] = state.restT
             memcpy(<vqf_real_t*> np.PyArray_DATA(restLastGyrLp)+3*i, state.restLastGyrLp, 3*sizeof(vqf_real_t))
             memcpy(<double*> np.PyArray_DATA(restGyrLpState)+3*2*i, state.restGyrLpState, 3*2*sizeof(double))
             memcpy(<vqf_real_t*> np.PyArray_DATA(restLastAccLp)+3*i, state.restLastAccLp, 3*sizeof(vqf_real_t))
             memcpy(<double*> np.PyArray_DATA(restAccLpState)+3*2*i, state.restAccLpState, 3*2*sizeof(double))
-            memcpy(<vqf_real_t*> np.PyArray_DATA(restLastMagLp)+3*i, state.restLastMagLp, 3*sizeof(vqf_real_t))
-            memcpy(<double*> np.PyArray_DATA(restMagLpState)+3*2*i, state.restMagLpState, 3*2*sizeof(double))
             magRefNorm[i] = state.magRefNorm
             magRefDip[i] = state.magRefDip
             magUndisturbedT[i] = state.magUndisturbedT
@@ -591,8 +580,6 @@ cdef class VQF:
             restGyrLpState=restGyrLpState,
             restLastAccLp=restLastAccLp,
             restAccLpState=restAccLpState,
-            restLastMagLp=restLastMagLp,
-            restMagLpState=restMagLpState,
             magRefNorm=magRefNorm,
             magRefDip=magRefDip,
             magUndisturbedT=magUndisturbedT,
@@ -682,12 +669,12 @@ cdef class VQF:
         """Returns the relative deviations used in rest detection.
 
          Looking at those values can be useful to understand how rest detection is working and which thresholds are
-         suitable. The output array is filled with the last values for gyroscope, accelerometer, and magnetometer,
-         relative to the threshold. In order for rest to be detected, all values must stay below 1.
+         suitable. The output array is filled with the last values for gyroscope and accelerometer,
+         relative to the threshold. In order for rest to be detected, both values must stay below 1.
 
-        :return: relative rest deviations as (3,) numpy array
+        :return: relative rest deviations as (2,) numpy array
         """
-        cdef np.ndarray[vqf_real_t, ndim=1, mode='c'] out = np.empty(shape=(3,), dtype=vqf_real)
+        cdef np.ndarray[vqf_real_t, ndim=1, mode='c'] out = np.empty(shape=(2,), dtype=vqf_real)
         self.c_obj.getRelativeRestDeviations(<vqf_real_t *> np.PyArray_DATA(out))
         return out
 
@@ -737,14 +724,13 @@ cdef class VQF:
         """Enables/disables magnetic disturbance detection and rejection."""
         self.c_obj.setMagDistRejectionEnabled(enabled)
 
-    def setRestDetectionThresholds(self, thGyr, thAcc, thMag):
+    def setRestDetectionThresholds(self, thGyr, thAcc):
         """Sets the current thresholds for rest detection.
 
         :param thGyr: new value for :cpp:member:`VQFParams::restThGyr`
         :param thAcc: new value for :cpp:member:`VQFParams::restThAcc`
-        :param thMag: new value for :cpp:member:`VQFParams::restThMag`
         """
-        self.c_obj.setRestDetectionThresholds(thGyr, thAcc, thMag)
+        self.c_obj.setRestDetectionThresholds(thGyr, thAcc)
 
     @property
     def params(self):
@@ -808,8 +794,6 @@ cdef class VQF:
         state.restGyrLpState = val.pop('restGyrLpState')
         state.restLastAccLp = val.pop('restLastAccLp')
         state.restAccLpState = val.pop('restAccLpState')
-        state.restLastMagLp = val.pop('restLastMagLp')
-        state.restMagLpState = val.pop('restMagLpState')
         state.magRefNorm = val.pop('magRefNorm')
         state.magRefDip = val.pop('magRefDip')
         state.magUndisturbedT = val.pop('magUndisturbedT')

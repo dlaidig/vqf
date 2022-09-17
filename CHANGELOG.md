@@ -18,7 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+### Changed
+- Rest detection is now based on gyroscopes and accelerometers only and does not make use of magnetometer measurements.
+  (In practice, gyroscopes and accelerometers are more sensitive for rest detection, and the use of magnetometers does
+  not add any value. In contrast, miscalibrated magnetometers could previously prevent rest from being detected.)
 
 ## [1.0.0] - 2022-04-01
 ### Added
