@@ -651,7 +651,7 @@ classdef VQF < handle
             % Returns true if rest was detected.
             rest = obj.state.restDetected;
         end
-        function magDist = getmagDistDetected(obj)
+        function magDist = getMagDistDetected(obj)
             % Returns true if a disturbed magnetic field was detected.
             magDist = obj.state.magDistDetected;
         end
