@@ -54,7 +54,7 @@ setup(
     python_requires='>=3.7',  # needed for dataclasses in PyVQF
     extras_require={
         # pip3 install --user -e ".[dev]"
-        'dev': ['tox', 'pytest', 'pytest-flake8', 'flake8<4',  # https://github.com/tholo/pytest-flake8/issues/81
+        'dev': ['tox', 'pytest', 'flake8',
                 'reuse', 'transplant', 'oct2py', 'scipy', 'breathe', 'matplotlib',
                 'sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-matlabdomain'],
     },

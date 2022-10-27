@@ -76,8 +76,8 @@ Matlab implementation):
 
 .. code-block:: sh
 
-    pytest
-    pytest --nomatlab --nooctave
+    flake8 && pytest
+    flake8 && pytest --nomatlab --nooctave
 
 To test `RESUE <https://reuse.software/>`_ compliance:
 
