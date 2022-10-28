@@ -17,8 +17,10 @@ Introduction
 This is the documentation for the implementation of the IMU orientation estimation filter described in the following
 publication:
 
-    D. Laidig, T. Seel. "VQF: Highly Accurate IMU Orientation Estimation with Bias Estimation and Magnetic
-    Disturbance Rejection." arXiv preprint, 2022. `arXiv:2203.17024 <https://arxiv.org/abs/2203.17024>`_.
+    D. Laidig and T. Seel. "VQF: Highly Accurate IMU Orientation Estimation with Bias Estimation and Magnetic
+    Disturbance Rejection." Information Fusion 2023, 91, 187--204.
+    `doi:10.1016/j.inffus.2022.10.014 <https://doi.org/10.1016/j.inffus.2022.10.014>`_.
+    [Accepted manuscript available at `arXiv:2203.17024 <https://arxiv.org/abs/2203.17024>`_.]
 
 
 The filter can perform simultaneous 6D (magnetometer-free) and 9D (gyr+acc+mag) sensor fusion and can also be used
