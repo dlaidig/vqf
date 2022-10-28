@@ -75,6 +75,7 @@ Documentation
 
    installation
    getting_started
+   faq
 
 .. toctree::
    :maxdepth: 2
