@@ -33,5 +33,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release.
 
 [Unreleased]: https://github.com/dlaidig/vqf/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/dlaidig/qmt/compare/v1.0.0...v2.0.0
+[2.0.0]: https://github.com/dlaidig/vqf/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/dlaidig/vqf/releases/tag/v1.0.0
