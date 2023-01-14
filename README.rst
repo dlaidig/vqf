@@ -46,10 +46,10 @@ Contact
 Daniel Laidig <laidig at control.tu-berlin.de>
 
 
-.. |tests| image:: https://img.shields.io/github/workflow/status/dlaidig/vqf/Tests?label=tests
-    :target: https://github.com/dlaidig/vqf/actions?query=workflow%3ATests
-.. |build| image:: https://img.shields.io/github/workflow/status/dlaidig/vqf/Build
-    :target: https://github.com/dlaidig/vqf/actions?query=workflow%3ABuild
+.. |tests| image:: https://img.shields.io/github/actions/workflow/status/dlaidig/vqf/tests.yml?branch=main
+    :target: https://github.com/dlaidig/vqf/actions/workflows/tests.yml
+.. |build| image:: https://img.shields.io/github/actions/workflow/status/dlaidig/vqf/build.yml?branch=main
+    :target: https://github.com/dlaidig/vqf/actions/workflows/build.yml
 .. |docs| image:: https://img.shields.io/readthedocs/vqf
     :target: https://vqf.readthedocs.io/
 .. |version| image:: https://img.shields.io/pypi/v/vqf
