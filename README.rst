@@ -35,6 +35,23 @@ The VQF Python package can easily be installed from PyPI via pip, e.g.:
 
 For more information, please refer to the `documentation <https://vqf.readthedocs.io/>`__.
 
+Implementations
+---------------
+
+This project contains several implementations of VQF in different programming languages:
+
+- The main implementation is written in **C++**.
+- Cython-based wrappers are provided that allow the fast C++ implementation to be used from **Python**.
+- Additionally, there is a (comparatively slow) implementation in **pure Python**.
+- A **pure Matlab** version is available as well.
+
+Additionally, you may find the following "inofficial" port useful:
+
+- C, by Hugo Chiang: https://github.com/DusKing1/vqf-c.
+
+If you have ported VQF to a different language and published the code under a permissive license, feel free to let me
+know so I can mention your project here.
+
 License
 -------
 
