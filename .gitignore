@@ -9,7 +9,9 @@ __pycache__/
 /build/
 /dist/
 /vqf.egg-info/
+/.eggs/
 /venv/
+/.venv/
 /vqf/build-cpp-*/
 CMakeLists.txt.user
 /vqf/cpp/libvqf.so
