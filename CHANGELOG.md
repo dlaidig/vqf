@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Removed obsolete (and unused) `restMagLpB` and `restMagLpA` filter coefficient calculation in Matlab implementation.
+- Added `lastAccCorrAngularRate` member to `PyVQFState`.
 
 ## [2.0.0] - 2022-10-28
 ### Changed

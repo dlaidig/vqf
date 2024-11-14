@@ -53,6 +53,7 @@ class PyVQFState:
 
     lastAccLp: np.ndarray = field(default_factory=lambda: np.zeros(3, float))
     accLpState: np.ndarray = field(default_factory=lambda: np.full((2, 3), np.nan, float))
+    lastAccCorrAngularRate: float = 0.0
 
     kMagInit: float = 1.0
     lastMagDisAngle: float = 0.0
@@ -353,7 +354,7 @@ class PyVQF:
                 self._state.biasP[1, 1] += self._coeffs.biasV
             if self._state.biasP[2, 2] < self._coeffs.biasP0:
                 self._state.biasP[2, 2] += self._coeffs.biasV
-            if w is not None:
+            if w is not None and e is not None:
                 # clip disagreement to -2..2 °/s
                 # (this also effectively limits the harm done by the first inclination correction step)
                 e = np.clip(e, -biasClip, biasClip)
