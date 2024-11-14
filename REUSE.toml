@@ -1,0 +1,5 @@
+version = 1
+SPDX-PackageName = "VQF"
+SPDX-PackageSupplier = "Daniel Laidig <laidig@control.tu-berlin.de>"
+SPDX-PackageDownloadLocation = "https://github.com/dlaidig/vqf"
+annotations = []
