@@ -1053,7 +1053,6 @@ classdef VQF < handle
 
             [obj.coeffs.restGyrLpB, obj.coeffs.restGyrLpA] = obj.filterCoeffs(obj.params.restFilterTau, obj.coeffs.gyrTs);
             [obj.coeffs.restAccLpB, obj.coeffs.restAccLpA] = obj.filterCoeffs(obj.params.restFilterTau, obj.coeffs.accTs);
-            [obj.coeffs.restMagLpB, obj.coeffs.restMagLpA] = obj.filterCoeffs(obj.params.restFilterTau, obj.coeffs.magTs);
 
             obj.coeffs.kMagRef = obj.gainFromTau(obj.params.magRefTau, obj.coeffs.magTs);
             if obj.params.magCurrentTau > 0
