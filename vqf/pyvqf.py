@@ -217,7 +217,7 @@ class PyVQF:
             squaredDeviation = deviation.dot(deviation)
 
             biasClip = self._params.biasClip*np.pi/180.0
-            if squaredDeviation >= (self._params.restThGyr*np.pi/180.0)**2 or np.max(np.abs(gyrLp)) > biasClip:
+            if squaredDeviation >= (self._params.restThGyr*np.pi/180.0)**2 or np.max(np.abs(gyrLp - self._state.bias)) > biasClip:
                 self._state.restT = 0.0
                 self._state.restDetected = False
             self._state.restLastGyrLp = gyrLp

@@ -234,7 +234,7 @@ classdef VQF < handle
                 squaredDeviation = dot(deviation, deviation);
 
                 biasClip = obj.params.biasClip*pi/180;
-                if squaredDeviation >= (obj.params.restThGyr*pi/180.0)^2 || max(abs(gyrLp)) > biasClip
+                if squaredDeviation >= (obj.params.restThGyr*pi/180.0)^2 || max(abs(gyrLp - obj.state.bias)) > biasClip
                     obj.state.restT = 0.0;
                     obj.state.restDetected = false;
                 end

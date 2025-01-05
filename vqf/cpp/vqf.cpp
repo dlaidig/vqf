@@ -82,8 +82,8 @@ void VQF::updateGyr(const vqf_real_t gyr[3])
 
         vqf_real_t biasClip = params.biasClip*vqf_real_t(M_PI/180.0);
         if (state.restLastSquaredDeviations[0] >= square(params.restThGyr*vqf_real_t(M_PI/180.0))
-                || fabs(state.restLastGyrLp[0]) > biasClip || fabs(state.restLastGyrLp[1]) > biasClip
-                || fabs(state.restLastGyrLp[2]) > biasClip) {
+                || fabs(state.restLastGyrLp[0] - state.bias[0]) > biasClip || fabs(state.restLastGyrLp[1] - state.bias[1]) > biasClip
+                || fabs(state.restLastGyrLp[2] - state.bias[2]) > biasClip) {
             state.restT = 0.0;
             state.restDetected = false;
         }
