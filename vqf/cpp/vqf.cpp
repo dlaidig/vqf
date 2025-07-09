@@ -143,10 +143,10 @@ void VQF::updateAcc(const vqf_real_t acc[3])
     // inclination correction
     vqf_real_t accCorrQuat[4];
     vqf_real_t q_w = sqrt((accEarth[2]+1)/2);
-    if (q_w > 1e-6) {
+    if (q_w > vqf_real_t(1e-6)) {
         accCorrQuat[0] = q_w;
-        accCorrQuat[1] = 0.5*accEarth[1]/q_w;
-        accCorrQuat[2] = -0.5*accEarth[0]/q_w;
+        accCorrQuat[1] = vqf_real_t(0.5)*accEarth[1]/q_w;
+        accCorrQuat[2] = vqf_real_t(-0.5)*accEarth[0]/q_w;
         accCorrQuat[3] = 0;
     } else {
         // to avoid numeric issues when acc is close to [0 0 -1], i.e. the correction step is close (<= 0.00011°) to 180°:
@@ -325,14 +325,14 @@ void VQF::updateMag(const vqf_real_t mag[3])
         // new magnetic field acceptance
         if (fabs(state.magNormDip[0] - state.magCandidateNorm) < params.magNormTh*state.magCandidateNorm
                 && fabs(state.magNormDip[1] - state.magCandidateDip) < params.magDipTh*vqf_real_t(M_PI/180.0)) {
-            if (norm(state.restLastGyrLp, 3) >= params.magNewMinGyr*M_PI/180.0) {
+            if (norm(state.restLastGyrLp, 3) >= params.magNewMinGyr*vqf_real_t(M_PI/180.0)) {
                 state.magCandidateT += coeffs.magTs;
             }
             state.magCandidateNorm += coeffs.kMagRef*(state.magNormDip[0] - state.magCandidateNorm);
             state.magCandidateDip += coeffs.kMagRef*(state.magNormDip[1] - state.magCandidateDip);
 
             if (state.magDistDetected && (state.magCandidateT >= params.magNewTime || (
-                    state.magRefNorm == 0.0 && state.magCandidateT >= params.magNewFirstTime))) {
+                    state.magRefNorm == vqf_real_t(0.0) && state.magCandidateT >= params.magNewFirstTime))) {
                 state.magRefNorm = state.magCandidateNorm;
                 state.magRefDip = state.magCandidateDip;
                 state.magDistDetected = false;
@@ -797,8 +797,8 @@ void VQF::filterInitialState(vqf_real_t x0, const double b[3], const double a[2]
 {
     // initial state for steady state (equivalent to scipy.signal.lfilter_zi, obtained by setting y=x=x0 in the filter
     // update equation)
-    out[0] = x0*(1 - b[0]);
-    out[1] = x0*(b[2] - a[1]);
+    out[0] = double(x0)*(1 - b[0]);
+    out[1] = double(x0)*(b[2] - a[1]);
 }
 
 void VQF::filterAdaptStateForCoeffChange(vqf_real_t last_y[], size_t N, const double b_old[3],
@@ -809,8 +809,8 @@ void VQF::filterAdaptStateForCoeffChange(vqf_real_t last_y[], size_t N, const do
         return;
     }
     for (size_t i = 0; i < N; i++) {
-        state[0+2*i] = state[0+2*i] + (b_old[0] - b_new[0])*last_y[i];
-        state[1+2*i] = state[1+2*i] + (b_old[1] - b_new[1] - a_old[0] + a_new[0])*last_y[i];
+        state[0+2*i] = state[0+2*i] + (b_old[0] - b_new[0])*double(last_y[i]);
+        state[1+2*i] = state[1+2*i] + (b_old[1] - b_new[1] - a_old[0] + a_new[0])*double(last_y[i]);
     }
 }
 
@@ -818,9 +818,9 @@ vqf_real_t VQF::filterStep(vqf_real_t x, const double b[3], const double a[2], d
 {
     // difference equations based on scipy.signal.lfilter documentation
     // assumes that a0 == 1.0
-    double y = b[0]*x + state[0];
-    state[0] = b[1]*x - a[0]*y + state[1];
-    state[1] = b[2]*x - a[1]*y;
+    double y = b[0]*double(x) + state[0];
+    state[0] = b[1]*double(x) - a[0]*y + state[1];
+    state[1] = b[2]*double(x) - a[1]*y;
     return y;
 }
 
@@ -840,10 +840,10 @@ void VQF::filterVec(const vqf_real_t x[], size_t N, vqf_real_t tau, vqf_real_t T
         }
         state[1]++;
         for (size_t i = 0; i < N; i++) {
-            state[2+i] += x[i];
+            state[2+i] += double(x[i]);
             out[i] = state[2+i]/state[1];
         }
-        if (state[1]*Ts >= tau) {
+        if (vqf_real_t(state[1])*Ts >= tau) {
             for(size_t i = 0; i < N; i++) {
                filterInitialState(out[i], b, a, state+2*i);
             }
@@ -918,19 +918,19 @@ void VQF::matrix3MultiplyTpsSecond(const vqf_real_t in1[9], const vqf_real_t in2
 bool VQF::matrix3Inv(const vqf_real_t in[9], vqf_real_t out[9])
 {
     // in = [a b c; d e f; g h i]
-    double A = in[4]*in[8] - in[5]*in[7]; // (e*i - f*h)
-    double D = in[2]*in[7] - in[1]*in[8]; // -(b*i - c*h)
-    double G = in[1]*in[5] - in[2]*in[4]; // (b*f - c*e)
-    double B = in[5]*in[6] - in[3]*in[8]; // -(d*i - f*g)
-    double E = in[0]*in[8] - in[2]*in[6]; // (a*i - c*g)
-    double H = in[2]*in[3] - in[0]*in[5]; // -(a*f - c*d)
-    double C = in[3]*in[7] - in[4]*in[6]; // (d*h - e*g)
-    double F = in[1]*in[6] - in[0]*in[7]; // -(a*h - b*g)
-    double I = in[0]*in[4] - in[1]*in[3]; // (a*e - b*d)
+    double A = double(in[4]*in[8] - in[5]*in[7]); // (e*i - f*h)
+    double D = double(in[2]*in[7] - in[1]*in[8]); // -(b*i - c*h)
+    double G = double(in[1]*in[5] - in[2]*in[4]); // (b*f - c*e)
+    double B = double(in[5]*in[6] - in[3]*in[8]); // -(d*i - f*g)
+    double E = double(in[0]*in[8] - in[2]*in[6]); // (a*i - c*g)
+    double H = double(in[2]*in[3] - in[0]*in[5]); // -(a*f - c*d)
+    double C = double(in[3]*in[7] - in[4]*in[6]); // (d*h - e*g)
+    double F = double(in[1]*in[6] - in[0]*in[7]); // -(a*h - b*g)
+    double I = double(in[0]*in[4] - in[1]*in[3]); // (a*e - b*d)
 
-    double det = in[0]*A + in[1]*B + in[2]*C; // a*A + b*B + c*C;
+    double det = double(in[0])*A + double(in[1])*B + double(in[2])*C; // a*A + b*B + c*C;
 
-    if (det >= -EPS && det <= EPS) {
+    if (det >= double(-EPS) && det <= double(EPS)) {
         std::fill(out, out+9, 0);
         return false;
     }
@@ -960,17 +960,17 @@ void VQF::setup()
 
     coeffs.kMag = gainFromTau(params.tauMag, coeffs.magTs);
 
-    coeffs.biasP0 = square(params.biasSigmaInit*100.0);
+    coeffs.biasP0 = square(params.biasSigmaInit*vqf_real_t(100.0));
     // the system noise increases the variance from 0 to (0.1 °/s)^2 in biasForgettingTime seconds
     coeffs.biasV = square(0.1*100.0)*coeffs.accTs/params.biasForgettingTime;
 
 #ifndef VQF_NO_MOTION_BIAS_ESTIMATION
-    vqf_real_t pMotion = square(params.biasSigmaMotion*100.0);
+    vqf_real_t pMotion = square(params.biasSigmaMotion*vqf_real_t(100.0));
     coeffs.biasMotionW = square(pMotion) / coeffs.biasV + pMotion;
     coeffs.biasVerticalW = coeffs.biasMotionW / std::max(params.biasVerticalForgettingFactor, vqf_real_t(1e-10));
 #endif
 
-    vqf_real_t pRest = square(params.biasSigmaRest*100.0);
+    vqf_real_t pRest = square(params.biasSigmaRest*vqf_real_t(100.0));
     coeffs.biasRestW = square(pRest) / coeffs.biasV + pRest;
 
     filterCoeffs(params.restFilterTau, coeffs.gyrTs, coeffs.restGyrLpB, coeffs.restGyrLpA);

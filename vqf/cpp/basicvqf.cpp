@@ -76,10 +76,10 @@ void BasicVQF::updateAcc(const vqf_real_t acc[3])
     // inclination correction
     vqf_real_t accCorrQuat[4];
     vqf_real_t q_w = sqrt((accEarth[2]+1)/2);
-    if (q_w > 1e-6) {
+    if (q_w > vqf_real_t(1e-6)) {
         accCorrQuat[0] = q_w;
-        accCorrQuat[1] = 0.5*accEarth[1]/q_w;
-        accCorrQuat[2] = -0.5*accEarth[0]/q_w;
+        accCorrQuat[1] = vqf_real_t(0.5)*accEarth[1]/q_w;
+        accCorrQuat[2] = vqf_real_t(-0.5)*accEarth[0]/q_w;
         accCorrQuat[3] = 0;
     } else {
         // to avoid numeric issues when acc is close to [0 0 -1], i.e. the correction step is close (<= 0.00011°) to 180°:
@@ -365,8 +365,8 @@ void BasicVQF::filterInitialState(vqf_real_t x0, const double b[3], const double
 {
     // initial state for steady state (equivalent to scipy.signal.lfilter_zi, obtained by setting y=x=x0 in the filter
     // update equation)
-    out[0] = x0*(1 - b[0]);
-    out[1] = x0*(b[2] - a[1]);
+    out[0] = double(x0)*(1 - b[0]);
+    out[1] = double(x0)*(b[2] - a[1]);
 }
 
 void BasicVQF::filterAdaptStateForCoeffChange(vqf_real_t last_y[], size_t N, const double b_old[3],
@@ -377,8 +377,8 @@ void BasicVQF::filterAdaptStateForCoeffChange(vqf_real_t last_y[], size_t N, con
         return;
     }
     for (size_t i = 0; i < N; i++) {
-        state[0+2*i] = state[0+2*i] + (b_old[0] - b_new[0])*last_y[i];
-        state[1+2*i] = state[1+2*i] + (b_old[1] - b_new[1] - a_old[0] + a_new[0])*last_y[i];
+        state[0+2*i] = state[0+2*i] + (b_old[0] - b_new[0])*double(last_y[i]);
+        state[1+2*i] = state[1+2*i] + (b_old[1] - b_new[1] - a_old[0] + a_new[0])*double(last_y[i]);
     }
 }
 
@@ -386,9 +386,9 @@ vqf_real_t BasicVQF::filterStep(vqf_real_t x, const double b[3], const double a[
 {
     // difference equations based on scipy.signal.lfilter documentation
     // assumes that a0 == 1.0
-    double y = b[0]*x + state[0];
-    state[0] = b[1]*x - a[0]*y + state[1];
-    state[1] = b[2]*x - a[1]*y;
+    double y = b[0]*double(x) + state[0];
+    state[0] = b[1]*double(x) - a[0]*y + state[1];
+    state[1] = b[2]*double(x) - a[1]*y;
     return y;
 }
 
@@ -408,10 +408,10 @@ void BasicVQF::filterVec(const vqf_real_t x[], size_t N, vqf_real_t tau, vqf_rea
         }
         state[1]++;
         for (size_t i = 0; i < N; i++) {
-            state[2+i] += x[i];
+            state[2+i] += double(x[i]);
             out[i] = state[2+i]/state[1];
         }
-        if (state[1]*Ts >= tau) {
+        if (vqf_real_t(state[1])*Ts >= tau) {
             for(size_t i = 0; i < N; i++) {
                filterInitialState(out[i], b, a, state+2*i);
             }

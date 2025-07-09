@@ -78,10 +78,10 @@ void accCorrection(const vqf_real_t* quat3D, const vqf_real_t* accI, size_t N, v
         // inclination correction
         vqf_real_t accCorrQuat[4];
         vqf_real_t q_w = sqrt((accEarth[2]+1)/2);
-        if (q_w > 1e-6) {
+        if (q_w > vqf_real_t(1e-6)) {
             accCorrQuat[0] = q_w;
-            accCorrQuat[1] = 0.5*accEarth[1]/q_w;
-            accCorrQuat[2] = -0.5*accEarth[0]/q_w;
+            accCorrQuat[1] = vqf_real_t(0.5)*accEarth[1]/q_w;
+            accCorrQuat[2] = vqf_real_t(-0.5)*accEarth[0]/q_w;
             accCorrQuat[3] = 0;
         } else {
             // to avoid numeric issues when acc is close to [0 0 -1], i.e. the correction step is close (<= 0.00011°) to 180°:
