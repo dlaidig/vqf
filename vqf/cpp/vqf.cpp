@@ -713,7 +713,7 @@ void VQF::quatSetToIdentity(vqf_real_t out[4])
     out[3] = 0;
 }
 
-void VQF::quatApplyDelta(vqf_real_t q[], vqf_real_t delta, vqf_real_t out[])
+void VQF::quatApplyDelta(vqf_real_t q[4], vqf_real_t delta, vqf_real_t out[4])
 {
     // out = quatMultiply([cos(delta/2), 0, 0, sin(delta/2)], q)
     vqf_real_t c = cos(delta/2);
@@ -776,7 +776,7 @@ vqf_real_t VQF::gainFromTau(vqf_real_t tau, vqf_real_t Ts)
     }
 }
 
-void VQF::filterCoeffs(vqf_real_t tau, vqf_real_t Ts, double outB[], double outA[])
+void VQF::filterCoeffs(vqf_real_t tau, vqf_real_t Ts, double outB[3], double outA[2])
 {
     assert(tau > 0);
     assert(Ts > 0);
@@ -793,7 +793,7 @@ void VQF::filterCoeffs(vqf_real_t tau, vqf_real_t Ts, double outB[], double outA
     outA[1] = (1-sqrt(2)*C+C*C)/D; // a2
 }
 
-void VQF::filterInitialState(vqf_real_t x0, const double b[3], const double a[2], double out[])
+void VQF::filterInitialState(vqf_real_t x0, const double b[3], const double a[2], double out[2])
 {
     // initial state for steady state (equivalent to scipy.signal.lfilter_zi, obtained by setting y=x=x0 in the filter
     // update equation)
@@ -801,9 +801,9 @@ void VQF::filterInitialState(vqf_real_t x0, const double b[3], const double a[2]
     out[1] = x0*(b[2] - a[1]);
 }
 
-void VQF::filterAdaptStateForCoeffChange(vqf_real_t last_y[], size_t N, const double b_old[],
-                                         const double a_old[], const double b_new[],
-                                         const double a_new[], double state[])
+void VQF::filterAdaptStateForCoeffChange(vqf_real_t last_y[], size_t N, const double b_old[3],
+                                         const double a_old[2], const double b_new[3],
+                                         const double a_new[2], double state[])
 {
     if (isnan(state[0])) {
         return;

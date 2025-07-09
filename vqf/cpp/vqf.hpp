@@ -949,7 +949,7 @@ public:
      * @param a denominator coefficients (without \f$a_0=1\f$)
      * @param out output array for filter state
      */
-    static void filterInitialState(vqf_real_t x0, const double b[], const double a[], double out[2]);
+    static void filterInitialState(vqf_real_t x0, const double b[3], const double a[2], double out[2]);
     /**
      * @brief Adjusts the filter state when changing coefficients.
      *
