@@ -300,7 +300,7 @@ public:
      *     double quat9D[N*4]; // output buffer
      *
      *     VQF vqf(0.01); // 0.01 s sampling time, i.e. 100 Hz
-     *     vqf.updateBatch(gyr, acc, mag, nullptr, quat9D);
+     *     vqf.updateBatch(gyr, acc, mag, N, nullptr, quat9D, nullptr);
      * \endrst
      *
      * @param gyr gyroscope measurement in rad/s (N*3 elements, must not be null)
