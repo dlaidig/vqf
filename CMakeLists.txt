@@ -10,4 +10,7 @@ project(vqf
     HOMEPAGE_URL "https://vqf.readthedocs.io"
     LANGUAGES CXX)
 
+option(VQF_SINGLE_PRECISION "Use single precision floats")
+option(VQF_NO_MOTION_BIAS_ESTIMATION "Disable motion bias estimation")
+
 add_subdirectory(vqf/cpp)
