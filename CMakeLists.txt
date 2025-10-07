@@ -4,6 +4,10 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project (vqf)
+project(vqf
+    VERSION 2.0.1
+    DESCRIPTION "A Versatile Quaternion-based Filter for IMU Orientation Estimation"
+    HOMEPAGE_URL "https://vqf.readthedocs.io"
+    LANGUAGES CXX)
 
 add_subdirectory(vqf/cpp)
