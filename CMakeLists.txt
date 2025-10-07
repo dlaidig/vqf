@@ -10,6 +10,7 @@ project(vqf
     HOMEPAGE_URL "https://vqf.readthedocs.io"
     LANGUAGES CXX)
 
+option(BUILD_SHARED_LIBS "Build using shared libraries")
 option(VQF_SINGLE_PRECISION "Use single precision floats")
 option(VQF_NO_MOTION_BIAS_ESTIMATION "Disable motion bias estimation")
 

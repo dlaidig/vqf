@@ -44,7 +44,7 @@ target_compile_definitions(vqf_dummy_no_motion_bias_est_single_precision PUBLIC
     VQF_NO_MOTION_BIAS_ESTIMATION=1
 )
 
-add_library(vqf SHARED
+add_library(vqf
     vqf.cpp
     basicvqf.cpp
     offline_vqf.cpp
