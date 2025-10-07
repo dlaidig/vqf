@@ -10,9 +10,12 @@ add_library(vqf
     offline_vqf.cpp
 )
 
-target_compile_definitions(vqf PUBLIC
-    VQF_SINGLE_PRECISION=${VQF_SINGLE_PRECISION}
-    VQF_NO_MOTION_BIAS_ESTIMATION=${VQF_NO_MOTION_BIAS_ESTIMATION}
-)
+if(VQF_SINGLE_PRECISION)
+    target_compile_definitions(vqf PUBLIC VQF_SINGLE_PRECISION)
+endif()
+
+if(VQF_NO_MOTION_BIAS_ESTIMATION)
+    target_compile_definitions(vqf PUBLIC VQF_NO_MOTION_BIAS_ESTIMATION)
+endif()
 
 set_target_properties(vqf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
