@@ -4,11 +4,13 @@
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(vqf
-    vqf.cpp
-    basicvqf.cpp
-    offline_vqf.cpp
-)
+set(VQF_SOURCES basicvqf.cpp vqf.cpp)
+
+if(NOT VQF_NO_MOTION_BIAS_ESTIMATION)
+    list(APPEND VQF_SOURCES offline_vqf.cpp)
+endif()
+
+add_library(vqf ${VQF_SOURCES})
 
 if(VQF_SINGLE_PRECISION)
     target_compile_definitions(vqf PUBLIC VQF_SINGLE_PRECISION)
