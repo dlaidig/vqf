@@ -367,7 +367,7 @@ void VQF::updateMag(const vqf_real_t mag[3])
                 k /= params.magRejectionFactor;
             }
         } else {
-            state.magRejectT = std::max(state.magRejectT - params.magRejectionFactor*coeffs.magTs, vqf_real_t(0.0));
+            state.magRejectT = (std::max)(state.magRejectT - params.magRejectionFactor*coeffs.magTs, vqf_real_t(0.0));
         }
     }
 
@@ -479,7 +479,7 @@ vqf_real_t VQF::getBiasEstimate(vqf_real_t out[3]) const
     vqf_real_t sum1 = fabs(state.biasP[0]) + fabs(state.biasP[1]) + fabs(state.biasP[2]);
     vqf_real_t sum2 = fabs(state.biasP[3]) + fabs(state.biasP[4]) + fabs(state.biasP[5]);
     vqf_real_t sum3 = fabs(state.biasP[6]) + fabs(state.biasP[7]) + fabs(state.biasP[8]);
-    vqf_real_t P = std::min(std::max(std::max(sum1, sum2), sum3), coeffs.biasP0);
+    vqf_real_t P = (std::min)((std::max)((std::max)(sum1, sum2), sum3), coeffs.biasP0);
 #else
     vqf_real_t P = state.biasP;
 #endif
@@ -967,7 +967,7 @@ void VQF::setup()
 #ifndef VQF_NO_MOTION_BIAS_ESTIMATION
     vqf_real_t pMotion = square(params.biasSigmaMotion*vqf_real_t(100.0));
     coeffs.biasMotionW = square(pMotion) / coeffs.biasV + pMotion;
-    coeffs.biasVerticalW = coeffs.biasMotionW / std::max(params.biasVerticalForgettingFactor, vqf_real_t(1e-10));
+    coeffs.biasVerticalW = coeffs.biasMotionW / (std::max)(params.biasVerticalForgettingFactor, vqf_real_t(1e-10));
 #endif
 
     vqf_real_t pRest = square(params.biasSigmaRest*vqf_real_t(100.0));
