@@ -19,5 +19,3 @@ endif()
 if(VQF_NO_MOTION_BIAS_ESTIMATION)
     target_compile_definitions(vqf PUBLIC VQF_NO_MOTION_BIAS_ESTIMATION)
 endif()
-
-set_target_properties(vqf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
