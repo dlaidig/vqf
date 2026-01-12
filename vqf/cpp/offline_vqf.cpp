@@ -142,7 +142,7 @@ void filterDelta(const bool* magDist, size_t N, vqf_real_t Ts, const VQFParams& 
                     k /= params.magRejectionFactor;
                 }
             } else {
-                magRejectT = std::max(magRejectT - params.magRejectionFactor*Ts, vqf_real_t(0.0));
+                magRejectT = (std::max)(magRejectT - params.magRejectionFactor*Ts, vqf_real_t(0.0));
             }
         }
 
@@ -246,8 +246,8 @@ void offlineVQF(const vqf_real_t gyr[], const vqf_real_t acc[], const vqf_real_t
         vqf_real_t sum1 = fabs(biasPInv1[9*i+0]) + fabs(biasPInv1[9*i+1]) + fabs(biasPInv1[9*i+2]);
         vqf_real_t sum2 = fabs(biasPInv1[9*i+3]) + fabs(biasPInv1[9*i+4]) + fabs(biasPInv1[9*i+5]);
         vqf_real_t sum3 = fabs(biasPInv1[9*i+6]) + fabs(biasPInv1[9*i+7]) + fabs(biasPInv1[9*i+8]);
-        vqf_real_t P = std::max(std::max(sum1, sum2), sum3);
-        biasSigma[i] = std::min(sqrt(P)*vqf_real_t(M_PI/100.0/180.0), params.biasSigmaInit);
+        vqf_real_t P = (std::max)((std::max)(sum1, sum2), sum3);
+        biasSigma[i] = (std::min)(sqrt(P)*vqf_real_t(M_PI/100.0/180.0), params.biasSigmaInit);
     }
 
     // perform gyroscope integration
