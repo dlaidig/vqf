@@ -39,6 +39,73 @@ The basic implementation is also self-contained and consists of the two files ``
 In order to compile the offline version, the files ``offline_vqf.hpp``, ``offline_vqf.cpp``. ``vqf.hpp``, and
 ``vqf.cpp`` are needed.
 
+VQF also provides cmake support, so you can easily add library to your cmake project.
+Here is example project which consists of main.cpp and CMakeLists.txt:
+
+.. code-block:: cmake
+
+    # CMakeLists.txt
+
+    cmake_minimum_required(VERSION 3.10)
+
+    project(myproject)
+
+    add_executable(myproject main.cpp)
+
+Then you can download and add vqf to cmake via several methods:
+
+* Using git submodule + add_subdirectory():
+
+.. code-block:: cmake
+
+    # CMakeLists.txt
+
+    # run in your project dir: git submodule add -b development https://github.com/dlaidig/vqf
+    add_subdirectory(vqf)
+
+* Using FetchContent:
+
+.. code-block:: cmake
+
+    # CMakeLists.txt
+
+    include(FetchContent)
+
+    FetchContent_Declare(
+      vqf
+      GIT_REPOSITORY https://github.com/dlaidig/vqf
+      GIT_TAG development)
+    FetchContent_MakeAvailable(vqf)
+
+* Using CPM package manager:
+
+.. code-block:: cmake
+
+    # CMakeLists.txt
+
+    file(
+      DOWNLOAD
+      https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.0/CPM.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+    include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+
+    CPMAddPackage("gh:dlaidig/vqf#development")
+
+Then link vqf to your executable:
+
+.. code-block:: cmake
+
+    # CMakeLists.txt
+
+    target_link_libraries(myproject PUBLIC vqf)
+
+And then build your project(featuring all vqf options):
+
+.. code-block:: sh
+
+    cmake -DVQF_SINGLE_PRECISION=0 -DVQF_NO_MOTION_BIAS_ESTIMATION=0 -S . -B build
+    cmake --build build
+
 Matlab Implementation
 ---------------------
 

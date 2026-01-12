@@ -2,55 +2,20 @@
 #
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.0)
+set(VQF_SOURCES basicvqf.cpp vqf.cpp)
 
-project (vqf)
-#set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wdouble-promotion -pedantic -ansi -std=c++98")
+if(NOT VQF_NO_MOTION_BIAS_ESTIMATION)
+    list(APPEND VQF_SOURCES offline_vqf.cpp)
+endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_library(vqf ${VQF_SOURCES})
 
-add_executable(vqf_dummy
-    vqf.cpp
-    basicvqf.cpp
-    offline_vqf.cpp
-    dummy_main.cpp
-)
+target_include_directories(vqf PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(vqf_dummy_no_motion_bias_est
-    vqf.cpp
-    basicvqf.cpp
-    dummy_main.cpp
-)
-target_compile_definitions(vqf_dummy_no_motion_bias_est PUBLIC
-    VQF_NO_MOTION_BIAS_ESTIMATION=1
-)
+if(VQF_SINGLE_PRECISION)
+    target_compile_definitions(vqf PUBLIC VQF_SINGLE_PRECISION)
+endif()
 
-add_executable(vqf_dummy_single_precision
-    vqf.cpp
-    basicvqf.cpp
-    offline_vqf.cpp
-    dummy_main.cpp
-)
-target_compile_definitions(vqf_dummy_single_precision PUBLIC
-    VQF_SINGLE_PRECISION=1
-)
-
-add_executable(vqf_dummy_no_motion_bias_est_single_precision
-    vqf.cpp
-    basicvqf.cpp
-    dummy_main.cpp
-)
-target_compile_definitions(vqf_dummy_no_motion_bias_est_single_precision PUBLIC
-    VQF_SINGLE_PRECISION=1
-    VQF_NO_MOTION_BIAS_ESTIMATION=1
-)
-
-add_library(vqf SHARED
-    vqf.cpp
-    basicvqf.cpp
-    offline_vqf.cpp
-)
-
-set_target_properties(vqf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+if(VQF_NO_MOTION_BIAS_ESTIMATION)
+    target_compile_definitions(vqf PUBLIC VQF_NO_MOTION_BIAS_ESTIMATION)
+endif()
