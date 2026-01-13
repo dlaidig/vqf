@@ -39,12 +39,13 @@ The basic implementation is also self-contained and consists of the two files ``
 In order to compile the offline version, the files ``offline_vqf.hpp``, ``offline_vqf.cpp``. ``vqf.hpp``, and
 ``vqf.cpp`` are needed.
 
-VQF also provides cmake support, so you can easily add library to your cmake project.
-Here is example project which consists of main.cpp and CMakeLists.txt:
+CMake
+^^^^^
+
+VQF also provides `CMake <https://cmake.org/>`_. support, so you can easily add VQF to your CMake project.
+Here is an example ``CMakeLists.txt`` file for a project which consists of a single file ``main.cpp``:
 
 .. code-block:: cmake
-
-    # CMakeLists.txt
 
     cmake_minimum_required(VERSION 3.10)
 
@@ -52,54 +53,55 @@ Here is example project which consists of main.cpp and CMakeLists.txt:
 
     add_executable(myproject main.cpp)
 
-Then you can download and add vqf to cmake via several methods:
-
-* Using git submodule + add_subdirectory():
-
-.. code-block:: cmake
-
-    # CMakeLists.txt
-
-    # run in your project dir: git submodule add -b development https://github.com/dlaidig/vqf
-    add_subdirectory(vqf)
-
-* Using FetchContent:
-
-.. code-block:: cmake
-
-    # CMakeLists.txt
-
-    include(FetchContent)
-
-    FetchContent_Declare(
-      vqf
-      GIT_REPOSITORY https://github.com/dlaidig/vqf
-      GIT_TAG development)
-    FetchContent_MakeAvailable(vqf)
-
-* Using CPM package manager:
-
-.. code-block:: cmake
-
-    # CMakeLists.txt
-
-    file(
-      DOWNLOAD
-      https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.0/CPM.cmake
-      ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
-    include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
-
-    CPMAddPackage("gh:dlaidig/vqf#development")
-
-Then link vqf to your executable:
-
-.. code-block:: cmake
-
-    # CMakeLists.txt
+    # <Insert one of the 3 snippets below here...>
 
     target_link_libraries(myproject PUBLIC vqf)
 
-And then build your project(featuring all vqf options):
+You can download and add VQF to CMake via several methods:
+
+1. Using git submodules + ``add_subdirectory()``:
+
+   Run ``git submodule add https://github.com/dlaidig/vqf`` in your project directory and add the following line to
+   ``CMakeLists.txt``:
+
+   .. code-block:: cmake
+
+       add_subdirectory(vqf)
+
+2. Using ``FetchContent``:
+
+   Add the following lines to ``CMakeLists.txt``:
+
+   .. code-block:: cmake
+
+       include(FetchContent)
+
+       FetchContent_Declare(
+         vqf
+         GIT_REPOSITORY https://github.com/dlaidig/vqf)
+       FetchContent_MakeAvailable(vqf)
+
+   Note: To use a specific git tag (e.g., ``development``), add ``GIT_TAG development`` to the ``FetchContent_Declare``
+   command.
+
+3. Using the CPM package manager:
+
+   Add the following lines to ``CMakeLists.txt``:
+
+   .. code-block:: cmake
+
+       file(
+         DOWNLOAD
+         https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.0/CPM.cmake
+         ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+       include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+
+       CPMAddPackage("gh:dlaidig/vqf#development")
+
+   Note: To use a specific git tag (e.g., ``development``), use ``gh:dlaidig/vqf#development`` in the
+   ``CPMAddPackage`` command.
+
+To build your project (with all VQF features enabled), run:
 
 .. code-block:: sh
 
@@ -136,7 +138,7 @@ To build the documentation:
 
 .. code-block:: sh
 
-    python3 setup.py docs -E
+    sphinx-build -b html docs build/sphinx/html/ -E
 
 To run unit tests and coding style checks (optionally with ``--nomatlab`` and ``--nooctave`` to disable testing the
 Matlab implementation):
