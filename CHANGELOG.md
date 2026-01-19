@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Improved CMake support (contributed by [SanyaNya](https://github.com/SanyaNya), see #36).
+- Use `cmath` instead of `math.h`, and provide own constants instead of `M_PI` and `M_SQRT2` (see #32).
 ### Fixed
 - Fixed compile issues due to min/max macros on Windows (contributed by [SanyaNya](https://github.com/SanyaNya), see #35).
 - Fixed `-Wdouble-promotion` and `-Warray-parameter` compiler warnings (see #32).

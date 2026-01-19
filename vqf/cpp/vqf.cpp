@@ -6,12 +6,13 @@
 
 #include <algorithm>
 #include <limits>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 
 #define EPS std::numeric_limits<vqf_real_t>::epsilon()
 #define NaN std::numeric_limits<vqf_real_t>::quiet_NaN()
+#define PI vqf_real_t(3.14159265358979323846264338327950288)
+#define SQRT2 vqf_real_t(1.41421356237309504880168872420969808)
 
 inline vqf_real_t square(vqf_real_t x) { return x*x; }
 
@@ -80,10 +81,10 @@ void VQF::updateGyr(const vqf_real_t gyr[3])
         state.restLastSquaredDeviations[0] = square(gyr[0] - state.restLastGyrLp[0])
                 + square(gyr[1] - state.restLastGyrLp[1]) + square(gyr[2] - state.restLastGyrLp[2]);
 
-        vqf_real_t biasClip = params.biasClip*vqf_real_t(M_PI/180.0);
-        if (state.restLastSquaredDeviations[0] >= square(params.restThGyr*vqf_real_t(M_PI/180.0))
-                || fabs(state.restLastGyrLp[0]) > biasClip || fabs(state.restLastGyrLp[1]) > biasClip
-                || fabs(state.restLastGyrLp[2]) > biasClip) {
+        vqf_real_t biasClip = params.biasClip*vqf_real_t(PI/180.0);
+        if (state.restLastSquaredDeviations[0] >= square(params.restThGyr*vqf_real_t(PI/180.0))
+                || std::fabs(state.restLastGyrLp[0]) > biasClip || std::fabs(state.restLastGyrLp[1]) > biasClip
+                || std::fabs(state.restLastGyrLp[2]) > biasClip) {
             state.restT = 0.0;
             state.restDetected = false;
         }
@@ -96,8 +97,8 @@ void VQF::updateGyr(const vqf_real_t gyr[3])
     vqf_real_t gyrNorm = norm(gyrNoBias, 3);
     vqf_real_t angle = gyrNorm * coeffs.gyrTs;
     if (gyrNorm > EPS) {
-        vqf_real_t c = cos(angle/2);
-        vqf_real_t s = sin(angle/2)/gyrNorm;
+        vqf_real_t c = std::cos(angle/2);
+        vqf_real_t s = std::sin(angle/2)/gyrNorm;
         vqf_real_t gyrStepQuat[4] = {c, s*gyrNoBias[0], s*gyrNoBias[1], s*gyrNoBias[2]};
         quatMultiply(state.gyrQuat, gyrStepQuat, state.gyrQuat);
         normalize(state.gyrQuat, 4);
@@ -142,7 +143,7 @@ void VQF::updateAcc(const vqf_real_t acc[3])
 
     // inclination correction
     vqf_real_t accCorrQuat[4];
-    vqf_real_t q_w = sqrt((accEarth[2]+1)/2);
+    vqf_real_t q_w = std::sqrt((accEarth[2]+1)/2);
     if (q_w > vqf_real_t(1e-6)) {
         accCorrQuat[0] = q_w;
         accCorrQuat[1] = vqf_real_t(0.5)*accEarth[1]/q_w;
@@ -159,12 +160,12 @@ void VQF::updateAcc(const vqf_real_t acc[3])
     normalize(state.accQuat, 4);
 
     // calculate correction angular rate to facilitate debugging
-    state.lastAccCorrAngularRate = acos(accEarth[2])/coeffs.accTs;
+    state.lastAccCorrAngularRate = std::acos(accEarth[2])/coeffs.accTs;
 
     // bias estimation
 #ifndef VQF_NO_MOTION_BIAS_ESTIMATION
     if (params.motionBiasEstEnabled || params.restBiasEstEnabled) {
-        vqf_real_t biasClip = params.biasClip*vqf_real_t(M_PI/180.0);
+        vqf_real_t biasClip = params.biasClip*vqf_real_t(PI/180.0);
 
         vqf_real_t accGyrQuat[4];
         vqf_real_t R[9];
@@ -257,7 +258,7 @@ void VQF::updateAcc(const vqf_real_t acc[3])
 #else
     // simplified implementation of bias estimation for the special case in which only rest bias estimation is enabled
     if (params.restBiasEstEnabled) {
-        vqf_real_t biasClip = params.biasClip*vqf_real_t(M_PI/180.0);
+        vqf_real_t biasClip = params.biasClip*vqf_real_t(PI/180.0);
         if (state.biasP < coeffs.biasP0) {
             state.biasP += coeffs.biasV;
         }
@@ -301,7 +302,7 @@ void VQF::updateMag(const vqf_real_t mag[3])
 
     if (params.magDistRejectionEnabled) {
         state.magNormDip[0] = norm(magEarth, 3);
-        state.magNormDip[1] = -asin(magEarth[2]/state.magNormDip[0]);
+        state.magNormDip[1] = -std::asin(magEarth[2]/state.magNormDip[0]);
 
         if (params.magCurrentTau > 0) {
             filterVec(state.magNormDip, 2, params.magCurrentTau, coeffs.magTs, coeffs.magNormDipLpB,
@@ -309,8 +310,8 @@ void VQF::updateMag(const vqf_real_t mag[3])
         }
 
         // magnetic disturbance detection
-        if (fabs(state.magNormDip[0] - state.magRefNorm) < params.magNormTh*state.magRefNorm
-                && fabs(state.magNormDip[1] - state.magRefDip) < params.magDipTh*vqf_real_t(M_PI/180.0)) {
+        if (std::fabs(state.magNormDip[0] - state.magRefNorm) < params.magNormTh*state.magRefNorm
+                && std::fabs(state.magNormDip[1] - state.magRefDip) < params.magDipTh*vqf_real_t(PI/180.0)) {
             state.magUndisturbedT += coeffs.magTs;
             if (state.magUndisturbedT >= params.magMinUndisturbedTime) {
                 state.magDistDetected = false;
@@ -323,9 +324,9 @@ void VQF::updateMag(const vqf_real_t mag[3])
         }
 
         // new magnetic field acceptance
-        if (fabs(state.magNormDip[0] - state.magCandidateNorm) < params.magNormTh*state.magCandidateNorm
-                && fabs(state.magNormDip[1] - state.magCandidateDip) < params.magDipTh*vqf_real_t(M_PI/180.0)) {
-            if (norm(state.restLastGyrLp, 3) >= params.magNewMinGyr*vqf_real_t(M_PI/180.0)) {
+        if (std::fabs(state.magNormDip[0] - state.magCandidateNorm) < params.magNormTh*state.magCandidateNorm
+                && std::fabs(state.magNormDip[1] - state.magCandidateDip) < params.magDipTh*vqf_real_t(PI/180.0)) {
+            if (norm(state.restLastGyrLp, 3) >= params.magNewMinGyr*vqf_real_t(PI/180.0)) {
                 state.magCandidateT += coeffs.magTs;
             }
             state.magCandidateNorm += coeffs.kMagRef*(state.magNormDip[0] - state.magCandidateNorm);
@@ -346,13 +347,13 @@ void VQF::updateMag(const vqf_real_t mag[3])
     }
 
     // calculate disagreement angle based on current magnetometer measurement
-    state.lastMagDisAngle = atan2(magEarth[0], magEarth[1]) - state.delta;
+    state.lastMagDisAngle = std::atan2(magEarth[0], magEarth[1]) - state.delta;
 
     // make sure the disagreement angle is in the range [-pi, pi]
-    if (state.lastMagDisAngle > vqf_real_t(M_PI)) {
-        state.lastMagDisAngle -= vqf_real_t(2*M_PI);
-    } else if (state.lastMagDisAngle < vqf_real_t(-M_PI)) {
-        state.lastMagDisAngle += vqf_real_t(2*M_PI);
+    if (state.lastMagDisAngle > vqf_real_t(PI)) {
+        state.lastMagDisAngle -= vqf_real_t(2*PI);
+    } else if (state.lastMagDisAngle < vqf_real_t(-PI)) {
+        state.lastMagDisAngle += vqf_real_t(2*PI);
     }
 
     vqf_real_t k = coeffs.kMag;
@@ -393,10 +394,10 @@ void VQF::updateMag(const vqf_real_t mag[3])
     state.lastMagCorrAngularRate = k*state.lastMagDisAngle/coeffs.magTs;
 
     // make sure delta is in the range [-pi, pi]
-    if (state.delta > vqf_real_t(M_PI)) {
-        state.delta -= vqf_real_t(2*M_PI);
-    } else if (state.delta < vqf_real_t(-M_PI)) {
-        state.delta += vqf_real_t(2*M_PI);
+    if (state.delta > vqf_real_t(PI)) {
+        state.delta -= vqf_real_t(2*PI);
+    } else if (state.delta < vqf_real_t(-PI)) {
+        state.delta += vqf_real_t(2*PI);
     }
 }
 
@@ -476,22 +477,22 @@ vqf_real_t VQF::getBiasEstimate(vqf_real_t out[3]) const
 #ifndef VQF_NO_MOTION_BIAS_ESTIMATION
     // use largest absolute row sum as upper bound estimate for largest eigenvalue (Gershgorin circle theorem)
     // and clip output to biasSigmaInit
-    vqf_real_t sum1 = fabs(state.biasP[0]) + fabs(state.biasP[1]) + fabs(state.biasP[2]);
-    vqf_real_t sum2 = fabs(state.biasP[3]) + fabs(state.biasP[4]) + fabs(state.biasP[5]);
-    vqf_real_t sum3 = fabs(state.biasP[6]) + fabs(state.biasP[7]) + fabs(state.biasP[8]);
+    vqf_real_t sum1 = std::fabs(state.biasP[0]) + std::fabs(state.biasP[1]) + std::fabs(state.biasP[2]);
+    vqf_real_t sum2 = std::fabs(state.biasP[3]) + std::fabs(state.biasP[4]) + std::fabs(state.biasP[5]);
+    vqf_real_t sum3 = std::fabs(state.biasP[6]) + std::fabs(state.biasP[7]) + std::fabs(state.biasP[8]);
     vqf_real_t P = (std::min)((std::max)((std::max)(sum1, sum2), sum3), coeffs.biasP0);
 #else
     vqf_real_t P = state.biasP;
 #endif
     // convert standard deviation from 0.01deg to rad
-    return sqrt(P)*vqf_real_t(M_PI/100.0/180.0);
+    return std::sqrt(P)*vqf_real_t(PI/100.0/180.0);
 }
 
 void VQF::setBiasEstimate(vqf_real_t bias[3], vqf_real_t sigma)
 {
     std::copy(bias, bias+3, state.bias);
     if (sigma > 0) {
-        vqf_real_t P = square(sigma*vqf_real_t(180.0*100.0/M_PI));
+        vqf_real_t P = square(sigma*vqf_real_t(180.0*100.0/PI));
 #ifndef VQF_NO_MOTION_BIAS_ESTIMATION
         matrix3SetToScaledIdentity(P, state.biasP);
 #else
@@ -512,8 +513,8 @@ bool VQF::getMagDistDetected() const
 
 void VQF::getRelativeRestDeviations(vqf_real_t out[2]) const
 {
-    out[0] = sqrt(state.restLastSquaredDeviations[0]) / (params.restThGyr*vqf_real_t(M_PI/180.0));
-    out[1] = sqrt(state.restLastSquaredDeviations[1]) / params.restThAcc;
+    out[0] = std::sqrt(state.restLastSquaredDeviations[0]) / (params.restThGyr*vqf_real_t(PI/180.0));
+    out[1] = std::sqrt(state.restLastSquaredDeviations[1]) / params.restThAcc;
 }
 
 vqf_real_t VQF::getMagRefNorm() const
@@ -716,8 +717,8 @@ void VQF::quatSetToIdentity(vqf_real_t out[4])
 void VQF::quatApplyDelta(vqf_real_t q[4], vqf_real_t delta, vqf_real_t out[4])
 {
     // out = quatMultiply([cos(delta/2), 0, 0, sin(delta/2)], q)
-    vqf_real_t c = cos(delta/2);
-    vqf_real_t s = sin(delta/2);
+    vqf_real_t c = std::cos(delta/2);
+    vqf_real_t s = std::sin(delta/2);
     vqf_real_t w = c * q[0] - s * q[3];
     vqf_real_t x = c * q[1] - s * q[2];
     vqf_real_t y = c * q[2] + s * q[1];
@@ -739,7 +740,7 @@ vqf_real_t VQF::norm(const vqf_real_t vec[], size_t N)
     for(size_t i = 0; i < N; i++) {
         s += vec[i]*vec[i];
     }
-    return sqrt(s);
+    return std::sqrt(s);
 }
 
 void VQF::normalize(vqf_real_t vec[], size_t N)
@@ -772,7 +773,7 @@ vqf_real_t VQF::gainFromTau(vqf_real_t tau, vqf_real_t Ts)
     } else if (tau == vqf_real_t(0.0)) {
         return 1; // k=1 for tau=0
     } else {
-        return 1 - exp(-Ts/tau);  // fc = 1/(2*pi*tau)
+        return 1 - std::exp(-Ts/tau);  // fc = 1/(2*pi*tau)
     }
 }
 
@@ -781,16 +782,16 @@ void VQF::filterCoeffs(vqf_real_t tau, vqf_real_t Ts, double outB[3], double out
     assert(tau > 0);
     assert(Ts > 0);
     // second order Butterworth filter based on https://stackoverflow.com/a/52764064
-    double fc = (M_SQRT2 / (2.0*M_PI))/double(tau); // time constant of dampened, non-oscillating part of step response
-    double C = tan(M_PI*fc*double(Ts));
-    double D = C*C + sqrt(2)*C + 1;
+    double fc = (SQRT2 / (2.0*PI))/double(tau); // time constant of dampened, non-oscillating part of step response
+    double C = std::tan(PI*fc*double(Ts));
+    double D = C*C + std::sqrt(2)*C + 1;
     double b0 = C*C/D;
     outB[0] = b0;
     outB[1] = 2*b0;
     outB[2] = b0;
     // a0 = 1.0
     outA[0] = 2*(C*C-1)/D; // a1
-    outA[1] = (1-sqrt(2)*C+C*C)/D; // a2
+    outA[1] = (1-std::sqrt(2)*C+C*C)/D; // a2
 }
 
 void VQF::filterInitialState(vqf_real_t x0, const double b[3], const double a[2], double out[2])
@@ -805,7 +806,7 @@ void VQF::filterAdaptStateForCoeffChange(vqf_real_t last_y[], size_t N, const do
                                          const double a_old[2], const double b_new[3],
                                          const double a_new[2], double state[])
 {
-    if (isnan(state[0])) {
+    if (std::isnan(state[0])) {
         return;
     }
     for (size_t i = 0; i < N; i++) {
@@ -831,8 +832,8 @@ void VQF::filterVec(const vqf_real_t x[], size_t N, vqf_real_t tau, vqf_real_t T
 
     // to avoid depending on a single sample, average the first samples (for duration tau)
     // and then use this average to calculate the filter initial state
-    if (isnan(state[0])) { // initialization phase
-        if (isnan(state[1])) { // first sample
+    if (std::isnan(state[0])) { // initialization phase
+        if (std::isnan(state[1])) { // first sample
             state[1] = 0; // state[1] is used to store the sample count
             for(size_t i = 0; i < N; i++) {
                 state[2+i] = 0; // state[2+i] is used to store the sum

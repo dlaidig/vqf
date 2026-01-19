@@ -6,12 +6,13 @@
 
 #include <algorithm>
 #include <limits>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 
 #define EPS std::numeric_limits<vqf_real_t>::epsilon()
 #define NaN std::numeric_limits<vqf_real_t>::quiet_NaN()
+#define PI vqf_real_t(3.14159265358979323846264338327950288)
+#define SQRT2 vqf_real_t(1.41421356237309504880168872420969808)
 
 inline vqf_real_t square(vqf_real_t x) { return x*x; }
 
@@ -48,8 +49,8 @@ void BasicVQF::updateGyr(const vqf_real_t gyr[3])
     vqf_real_t gyrNorm = norm(gyr, 3);
     vqf_real_t angle = gyrNorm * coeffs.gyrTs;
     if (gyrNorm > EPS) {
-        vqf_real_t c = cos(angle/2);
-        vqf_real_t s = sin(angle/2)/gyrNorm;
+        vqf_real_t c = std::cos(angle/2);
+        vqf_real_t s = std::sin(angle/2)/gyrNorm;
         vqf_real_t gyrStepQuat[4] = {c, s*gyr[0], s*gyr[1], s*gyr[2]};
         quatMultiply(state.gyrQuat, gyrStepQuat, state.gyrQuat);
         normalize(state.gyrQuat, 4);
@@ -75,7 +76,7 @@ void BasicVQF::updateAcc(const vqf_real_t acc[3])
 
     // inclination correction
     vqf_real_t accCorrQuat[4];
-    vqf_real_t q_w = sqrt((accEarth[2]+1)/2);
+    vqf_real_t q_w = std::sqrt((accEarth[2]+1)/2);
     if (q_w > vqf_real_t(1e-6)) {
         accCorrQuat[0] = q_w;
         accCorrQuat[1] = vqf_real_t(0.5)*accEarth[1]/q_w;
@@ -107,13 +108,13 @@ void BasicVQF::updateMag(const vqf_real_t mag[3])
     quatRotate(accGyrQuat, mag, magEarth);
 
     // calculate disagreement angle based on current magnetometer measurement
-    vqf_real_t magDisAngle = atan2(magEarth[0], magEarth[1]) - state.delta;
+    vqf_real_t magDisAngle = std::atan2(magEarth[0], magEarth[1]) - state.delta;
 
     // make sure the disagreement angle is in the range [-pi, pi]
-    if (magDisAngle > vqf_real_t(M_PI)) {
-        magDisAngle -= vqf_real_t(2*M_PI);
-    } else if (magDisAngle < vqf_real_t(-M_PI)) {
-        magDisAngle += vqf_real_t(2*M_PI);
+    if (magDisAngle > vqf_real_t(PI)) {
+        magDisAngle -= vqf_real_t(2*PI);
+    } else if (magDisAngle < vqf_real_t(-PI)) {
+        magDisAngle += vqf_real_t(2*PI);
     }
 
     vqf_real_t k = coeffs.kMag;
@@ -138,10 +139,10 @@ void BasicVQF::updateMag(const vqf_real_t mag[3])
     state.delta += k*magDisAngle;
 
     // make sure delta is in the range [-pi, pi]
-    if (state.delta > vqf_real_t(M_PI)) {
-        state.delta -= vqf_real_t(2*M_PI);
-    } else if (state.delta < vqf_real_t(-M_PI)) {
-        state.delta += vqf_real_t(2*M_PI);
+    if (state.delta > vqf_real_t(PI)) {
+        state.delta -= vqf_real_t(2*PI);
+    } else if (state.delta < vqf_real_t(-PI)) {
+        state.delta += vqf_real_t(2*PI);
     }
 }
 
@@ -284,8 +285,8 @@ void BasicVQF::quatSetToIdentity(vqf_real_t out[4])
 void BasicVQF::quatApplyDelta(vqf_real_t q[4], vqf_real_t delta, vqf_real_t out[4])
 {
     // out = quatMultiply([cos(delta/2), 0, 0, sin(delta/2)], q)
-    vqf_real_t c = cos(delta/2);
-    vqf_real_t s = sin(delta/2);
+    vqf_real_t c = std::cos(delta/2);
+    vqf_real_t s = std::sin(delta/2);
     vqf_real_t w = c * q[0] - s * q[3];
     vqf_real_t x = c * q[1] - s * q[2];
     vqf_real_t y = c * q[2] + s * q[1];
@@ -307,7 +308,7 @@ vqf_real_t BasicVQF::norm(const vqf_real_t vec[], size_t N)
     for(size_t i = 0; i < N; i++) {
         s += vec[i]*vec[i];
     }
-    return sqrt(s);
+    return std::sqrt(s);
 }
 
 void BasicVQF::normalize(vqf_real_t vec[], size_t N)
@@ -340,7 +341,7 @@ vqf_real_t BasicVQF::gainFromTau(vqf_real_t tau, vqf_real_t Ts)
     } else if (tau == vqf_real_t(0.0)) {
         return 1; // k=1 for tau=0
     } else {
-        return 1 - exp(-Ts/tau);  // fc = 1/(2*pi*tau)
+        return 1 - std::exp(-Ts/tau);  // fc = 1/(2*pi*tau)
     }
 }
 
@@ -349,16 +350,16 @@ void BasicVQF::filterCoeffs(vqf_real_t tau, vqf_real_t Ts, double outB[3], doubl
     assert(tau > 0);
     assert(Ts > 0);
     // second order Butterworth filter based on https://stackoverflow.com/a/52764064
-    double fc = (M_SQRT2 / (2.0*M_PI))/double(tau); // time constant of dampened, non-oscillating part of step response
-    double C = tan(M_PI*fc*double(Ts));
-    double D = C*C + sqrt(2)*C + 1;
+    double fc = (SQRT2 / (2.0*PI))/double(tau); // time constant of dampened, non-oscillating part of step response
+    double C = std::tan(PI*fc*double(Ts));
+    double D = C*C + std::sqrt(2)*C + 1;
     double b0 = C*C/D;
     outB[0] = b0;
     outB[1] = 2*b0;
     outB[2] = b0;
     // a0 = 1.0
     outA[0] = 2*(C*C-1)/D; // a1
-    outA[1] = (1-sqrt(2)*C+C*C)/D; // a2
+    outA[1] = (1-std::sqrt(2)*C+C*C)/D; // a2
 }
 
 void BasicVQF::filterInitialState(vqf_real_t x0, const double b[3], const double a[2], double out[2])
@@ -373,7 +374,7 @@ void BasicVQF::filterAdaptStateForCoeffChange(vqf_real_t last_y[], size_t N, con
                                               const double a_old[2], const double b_new[3],
                                               const double a_new[2], double state[])
 {
-    if (isnan(state[0])) {
+    if (std::isnan(state[0])) {
         return;
     }
     for (size_t i = 0; i < N; i++) {
@@ -399,8 +400,8 @@ void BasicVQF::filterVec(const vqf_real_t x[], size_t N, vqf_real_t tau, vqf_rea
 
     // to avoid depending on a single sample, average the first samples (for duration tau)
     // and then use this average to calculate the filter initial state
-    if (isnan(state[0])) { // initialization phase
-        if (isnan(state[1])) { // first sample
+    if (std::isnan(state[0])) { // initialization phase
+        if (std::isnan(state[1])) { // first sample
             state[1] = 0; // state[1] is used to store the sample count
             for(size_t i = 0; i < N; i++) {
                 state[2+i] = 0; // state[2+i] is used to store the sum

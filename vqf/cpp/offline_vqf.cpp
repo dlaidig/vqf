@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <limits>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 
 #define EPS std::numeric_limits<vqf_real_t>::epsilon()
 #define NaN std::numeric_limits<vqf_real_t>::quiet_NaN()
+#define PI vqf_real_t(3.14159265358979323846264338327950288)
 
 
 void matrix3MultiplyVec(const vqf_real_t inR[9], const vqf_real_t inV[9], vqf_real_t out[3])
@@ -32,8 +32,8 @@ void integrateGyr(const vqf_real_t *gyr, const vqf_real_t *bias, size_t N, vqf_r
         vqf_real_t gyrnorm = VQF::norm(gyrNoBias, 3);
         vqf_real_t angle = gyrnorm * Ts;
         if (gyrnorm > EPS) {
-            vqf_real_t c = cos(angle/2);
-            vqf_real_t s = sin(angle/2)/gyrnorm;
+            vqf_real_t c = std::cos(angle/2);
+            vqf_real_t s = std::sin(angle/2)/gyrnorm;
             vqf_real_t gyrStepQuat[4] = {c, s*gyrNoBias[0], s*gyrNoBias[1], s*gyrNoBias[2]};
             VQF::quatMultiply(q, gyrStepQuat, q);
             VQF::normalize(q, 4);
@@ -77,7 +77,7 @@ void accCorrection(const vqf_real_t* quat3D, const vqf_real_t* accI, size_t N, v
 
         // inclination correction
         vqf_real_t accCorrQuat[4];
-        vqf_real_t q_w = sqrt((accEarth[2]+1)/2);
+        vqf_real_t q_w = std::sqrt((accEarth[2]+1)/2);
         if (q_w > vqf_real_t(1e-6)) {
             accCorrQuat[0] = q_w;
             accCorrQuat[1] = vqf_real_t(0.5)*accEarth[1]/q_w;
@@ -107,7 +107,7 @@ void calculateDelta(const vqf_real_t* quat6D, const vqf_real_t* mag, size_t N, v
         VQF::quatRotate(quat6D + 4*i, mag + 3*i, magEarth);
 
         // calculate disagreement angle based on current magnetometer measurement
-        delta[i] = atan2(magEarth[0], magEarth[1]);
+        delta[i] = std::atan2(magEarth[0], magEarth[1]);
     }
 }
 
@@ -124,10 +124,10 @@ void filterDelta(const bool* magDist, size_t N, vqf_real_t Ts, const VQFParams& 
         vqf_real_t disAngle = delta[j] - d;
 
         // make sure the disagreement angle is in the range [-pi, pi]
-        if (disAngle > vqf_real_t(M_PI)) {
-            disAngle -= vqf_real_t(2*M_PI);
-        } else if (disAngle < vqf_real_t(-M_PI)) {
-            disAngle += vqf_real_t(2*M_PI);
+        if (disAngle > vqf_real_t(PI)) {
+            disAngle -= vqf_real_t(2*PI);
+        } else if (disAngle < vqf_real_t(-PI)) {
+            disAngle += vqf_real_t(2*PI);
         }
 
         vqf_real_t k = kMag;
@@ -166,10 +166,10 @@ void filterDelta(const bool* magDist, size_t N, vqf_real_t Ts, const VQFParams& 
         d += k*disAngle;
 
         // make sure delta is in the range [-pi, pi]
-        if (d > vqf_real_t(M_PI)) {
-            d -= vqf_real_t(2*M_PI);
-        } else if (d < vqf_real_t(-M_PI)) {
-            d += vqf_real_t(2*M_PI);
+        if (d > vqf_real_t(PI)) {
+            d -= vqf_real_t(2*PI);
+        } else if (d < vqf_real_t(-PI)) {
+            d += vqf_real_t(2*PI);
         }
 
         // write output back into delta array
@@ -243,11 +243,11 @@ void offlineVQF(const vqf_real_t gyr[], const vqf_real_t acc[], const vqf_real_t
 
         // determine bias estimation uncertainty based on new covariance (P_1^-1 + P_2^-1)^-1
         // (cf. VQF::getBiasEstimate)
-        vqf_real_t sum1 = fabs(biasPInv1[9*i+0]) + fabs(biasPInv1[9*i+1]) + fabs(biasPInv1[9*i+2]);
-        vqf_real_t sum2 = fabs(biasPInv1[9*i+3]) + fabs(biasPInv1[9*i+4]) + fabs(biasPInv1[9*i+5]);
-        vqf_real_t sum3 = fabs(biasPInv1[9*i+6]) + fabs(biasPInv1[9*i+7]) + fabs(biasPInv1[9*i+8]);
+        vqf_real_t sum1 = std::fabs(biasPInv1[9*i+0]) + std::fabs(biasPInv1[9*i+1]) + std::fabs(biasPInv1[9*i+2]);
+        vqf_real_t sum2 = std::fabs(biasPInv1[9*i+3]) + std::fabs(biasPInv1[9*i+4]) + std::fabs(biasPInv1[9*i+5]);
+        vqf_real_t sum3 = std::fabs(biasPInv1[9*i+6]) + std::fabs(biasPInv1[9*i+7]) + std::fabs(biasPInv1[9*i+8]);
         vqf_real_t P = (std::max)((std::max)(sum1, sum2), sum3);
-        biasSigma[i] = (std::min)(sqrt(P)*vqf_real_t(M_PI/100.0/180.0), params.biasSigmaInit);
+        biasSigma[i] = (std::min)(std::sqrt(P)*vqf_real_t(PI/100.0/180.0), params.biasSigmaInit);
     }
 
     // perform gyroscope integration
