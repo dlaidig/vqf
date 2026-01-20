@@ -182,6 +182,16 @@ def test_filterCoeffs(cls, tau, Ts):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
+def test_filterCoeffs_passthrough(cls):
+    if cls is None:
+        pytest.skip('--nomatlab and/or --nooctave is set')
+    outB, outA = cls.filterCoeffs(0.004, 0.01)
+    # when tau < Ts/2, should return passthrough coefficients
+    np.testing.assert_almost_equal(outB, [1.0, 0.0, 0.0])
+    np.testing.assert_almost_equal(outA, [0.0, 0.0])
+
+
+@pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
 @pytest.mark.parametrize('tau', [0.1, 1.0, 10.0])
 @pytest.mark.parametrize('Ts', [0.01, 0.001])
 @pytest.mark.parametrize('x0', [1.0, 10.0])
@@ -246,6 +256,28 @@ def test_filterVec_init(cls):
     ref[ind:] = scipy.signal.lfilter(b,  np.concatenate([[1.0], a]), x[ind:], axis=0, zi=zi)[0]
 
     np.testing.assert_almost_equal(out, ref)
+
+
+@pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
+def test_filterVec_passthrough(cls):
+    if cls is None:
+        pytest.skip('--nomatlab and/or --nooctave is set')
+    tau = 0.004  # tau < Ts/2 = 0.005 triggers passthrough
+    Ts = 0.01
+    t = np.arange(0, 2, Ts)
+    x = np.column_stack([np.sin(t), np.cos(t)])
+    b, a = cls.filterCoeffs(tau, Ts)
+    state = np.full((2, 2) if hasattr(cls, 'is_matlab') or cls == PyVQF else 2*2, fill_value=np.nan)
+    out = np.zeros_like(x)
+    for i in range(len(t)):
+        tmp = cls.filterVec(x[i], tau, Ts, b, a, state)
+        if isinstance(tmp, list):
+            out[i], state = tmp
+        else:
+            out[i] = tmp
+
+    # with passthrough coefficients, output should equal input
+    np.testing.assert_almost_equal(out, x)
 
 
 @pytest.mark.parametrize('cls', ['VQF'], indirect=True)

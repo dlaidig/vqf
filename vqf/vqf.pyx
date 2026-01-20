@@ -945,6 +945,9 @@ cdef class VQF:
         The filter is parametrized via the time constant of the dampened, non-oscillating part of step response and the
         resulting cutoff frequency is :math:`f_\mathrm{c} = \frac{\sqrt{2}}{2\pi\tau}`.
 
+        When :math:`\tau < \frac{T_\mathrm{s}}{2}` (which corresponds to :math:`f_\mathrm{c}` exceeding 90 % of the
+        Nyquist frequency), a direct passthrough fallback is used to prevent instability.
+
         :param tau: time constant :math:`\tau` in seconds
         :param Ts: sampling time :math:`T_\mathrm{s}` in seconds
         :return: numerator coefficients b as (3,) numpy array, denominator coefficients a (without :math:`a_0=1`) as

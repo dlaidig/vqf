@@ -781,6 +781,18 @@ void VQF::filterCoeffs(vqf_real_t tau, vqf_real_t Ts, double outB[3], double out
 {
     assert(tau > 0);
     assert(Ts > 0);
+
+    // disable filter and use direct passthrough when tau < Ts/2 to avoid instability
+    // (this corresponds to fc exceeding 90% of the Nyquist frequency)
+    if (tau < Ts/2) {
+        outB[0] = 1;
+        outB[1] = 0;
+        outB[2] = 0;
+        outA[0] = 0;
+        outA[1] = 0;
+        return;
+    }
+
     // second order Butterworth filter based on https://stackoverflow.com/a/52764064
     double fc = (SQRT2 / (2.0*PI))/double(tau); // time constant of dampened, non-oscillating part of step response
     double C = std::tan(PI*fc*double(Ts));

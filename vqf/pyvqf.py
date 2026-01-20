@@ -894,6 +894,9 @@ class PyVQF:
         The filter is parametrized via the time constant of the dampened, non-oscillating part of step response and the
         resulting cutoff frequency is :math:`f_\mathrm{c} = \frac{\sqrt{2}}{2\pi\tau}`.
 
+        When :math:`\tau < \frac{T_\mathrm{s}}{2}` (which corresponds to :math:`f_\mathrm{c}` exceeding 90 % of the
+        Nyquist frequency), a direct passthrough fallback is used to prevent instability.
+
         :param tau: time constant :math:`\tau` in seconds
         :param Ts: sampling time :math:`T_\mathrm{s}` in seconds
         :return: numerator coefficients b as (3,) numpy array, denominator coefficients a (without :math:`a_0=1`) as
@@ -901,6 +904,12 @@ class PyVQF:
         """
         assert tau > 0
         assert Ts > 0
+
+        # disable filter and use direct passthrough when tau < Ts/2 to avoid instability
+        # (this corresponds to fc exceeding 90% of the Nyquist frequency)
+        if tau < Ts/2:
+            return np.array([1.0, 0.0, 0.0], float), np.array([0.0, 0.0], float)
+
         # second order Butterworth filter based on https://stackoverflow.com/a/52764064
         fc = math.sqrt(2) / (2.0 * math.pi * tau)  # time constant of dampened, non-oscillating part of step response
         C = math.tan(math.pi*fc*Ts)

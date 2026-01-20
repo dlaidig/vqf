@@ -936,6 +936,9 @@ public:
      * The filter is parametrized via the time constant of the dampened, non-oscillating part of step response and the
      * resulting cutoff frequency is \f$f_\mathrm{c} = \frac{\sqrt{2}}{2\pi\tau}\f$.
      *
+     * When \f$\tau < \frac{T_\mathrm{s}}{2}\f$ (which corresponds to \f$f_\mathrm{c}\f$ exceeding 90 % of the
+     * Nyquist frequency), a direct passthrough fallback is used to prevent instability.
+     *
      * @param tau time constant \f$\tau\f$ in seconds
      * @param Ts sampling time \f$T_\mathrm{s}\f$ in seconds
      * @param outB output array for numerator coefficients
