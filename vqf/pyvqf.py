@@ -2,12 +2,75 @@
 #
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import copy
 import dataclasses
 import math
 from dataclasses import dataclass, field
+from typing import TypedDict, Any, overload, cast
 
 import numpy as np
+
+
+class PyVQFBatchResults9D(TypedDict):
+    quat6D: np.ndarray
+    quat9D: np.ndarray
+    delta: np.ndarray
+    bias: np.ndarray
+    biasSigma: np.ndarray
+    restDetected: np.ndarray
+    magDistDetected: np.ndarray
+
+
+class PyVQFBatchResults6D(TypedDict):
+    quat6D: np.ndarray
+    bias: np.ndarray
+    biasSigma: np.ndarray
+    restDetected: np.ndarray
+
+
+PyVQFBatchResults = PyVQFBatchResults9D | PyVQFBatchResults6D
+
+
+class PyVQFStateDict(TypedDict):
+    gyrQuat: np.ndarray
+    accQuat: np.ndarray
+    delta: float
+
+    restDetected: bool
+    magDistDetected: bool
+
+    lastAccLp: np.ndarray
+    accLpState: np.ndarray
+    lastAccCorrAngularRate: float
+
+    kMagInit: float
+    lastMagDisAngle: float
+    lastMagCorrAngularRate: float
+
+    bias: np.ndarray
+    biasP: np.ndarray
+
+    motionBiasEstRLpState: np.ndarray
+    motionBiasEstBiasLpState: np.ndarray
+
+    restLastSquaredDeviations: np.ndarray
+    restT: float
+    restLastGyrLp: np.ndarray
+    restGyrLpState: np.ndarray
+    restLastAccLp: np.ndarray
+    restAccLpState: np.ndarray
+
+    magRefNorm: float
+    magRefDip: float
+    magUndisturbedT: float
+    magRejectT: float
+    magCandidateNorm: float
+    magCandidateDip: float
+    magCandidateT: float
+    magNormDip: np.ndarray
+    magNormDipLpState: np.ndarray
 
 
 EPS = np.finfo(float).eps
@@ -139,18 +202,18 @@ class PyVQF:
     is much faster than this pure Python implementation. Depending on use case and programming language of choice,
     the following alternatives might be useful:
 
-    +------------------------+---------------------------+--------------------------+---------------------------+
-    |                        | Full Version              | Basic Version            | Offline Version           |
-    |                        |                           |                          |                           |
-    +========================+===========================+==========================+===========================+
-    | **C++**                | :cpp:class:`VQF`          | :cpp:class:`BasicVQF`    | :cpp:func:`offlineVQF`    |
-    +------------------------+---------------------------+--------------------------+---------------------------+
-    | **Python/C++ (fast)**  | :py:class:`vqf.VQF`       | :py:class:`vqf.BasicVQF` | :py:meth:`vqf.offlineVQF` |
-    +------------------------+---------------------------+--------------------------+---------------------------+
-    | **Pure Python (slow)** | **vqf.PyVQ (this class)** | --                       | --                        |
-    +------------------------+---------------------------+--------------------------+---------------------------+
-    | **Pure Matlab (slow)** | :mat:class:`VQF.m <VQF>`  | --                       | --                        |
-    +------------------------+---------------------------+--------------------------+---------------------------+
+    +------------------------+----------------------------+--------------------------+---------------------------+
+    |                        | Full Version               | Basic Version            | Offline Version           |
+    |                        |                            |                          |                           |
+    +========================+============================+==========================+===========================+
+    | **C++**                | :cpp:class:`VQF`           | :cpp:class:`BasicVQF`    | :cpp:func:`offlineVQF`    |
+    +------------------------+----------------------------+--------------------------+---------------------------+
+    | **Python/C++ (fast)**  | :py:class:`vqf.VQF`        | :py:class:`vqf.BasicVQF` | :py:meth:`vqf.offlineVQF` |
+    +------------------------+----------------------------+--------------------------+---------------------------+
+    | **Pure Python (slow)** | **vqf.PyVQF (this class)** | --                       | --                        |
+    +------------------------+----------------------------+--------------------------+---------------------------+
+    | **Pure Matlab (slow)** | :mat:class:`VQF.m <VQF>`   | --                       | --                        |
+    +------------------------+----------------------------+--------------------------+---------------------------+
 
     In the most common case (using the default parameters and all data being sampled with the same frequency, create the
     class like this:
@@ -177,7 +240,7 @@ class PyVQF:
 
     See :cpp:struct:`VQFParams` for a detailed description of all parameters.
     """
-    def __init__(self, gyrTs, accTs=-1.0, magTs=-1.0, **params):
+    def __init__(self, gyrTs: float, accTs: float = -1.0, magTs: float = -1.0, **params: Any) -> None:
         """
 
         :param gyrTs: sampling time of the gyroscope measurements in seconds
@@ -197,7 +260,7 @@ class PyVQF:
 
         self._setup()
 
-    def updateGyr(self, gyr):
+    def updateGyr(self, gyr: np.ndarray) -> None:
         """Performs gyroscope update step.
 
         It is only necessary to call this function directly if gyroscope, accelerometers and magnetometers have
@@ -236,7 +299,7 @@ class PyVQF:
             self._state.gyrQuat = self.quatMultiply(self._state.gyrQuat, gyrStepQuat)
             self.normalize(self._state.gyrQuat)
 
-    def updateAcc(self, acc):
+    def updateAcc(self, acc: np.ndarray) -> None:
         """Performs accelerometer update step.
 
         It is only necessary to call this function directly if gyroscope, accelerometers and magnetometers have
@@ -371,7 +434,7 @@ class PyVQF:
                 # clip bias estimate to -2..2 °/s
                 bias[:] = np.clip(bias, -biasClip, biasClip)
 
-    def updateMag(self, mag):
+    def updateMag(self, mag: np.ndarray) -> None:
         """Performs magnetometer update step.
 
         It is only necessary to call this function directly if gyroscope, accelerometers and magnetometers have
@@ -482,7 +545,8 @@ class PyVQF:
         elif self._state.delta < -np.pi:
             self._state.delta += 2*np.pi
 
-    def update(self, gyr, acc, mag=None):
+    def update(self, gyr: np.ndarray, acc: np.ndarray,
+               mag: np.ndarray | None = None) -> None:
         """Performs filter update step for one sample.
 
         :param gyr: gyr gyroscope measurement in rad/s -- numpy array with shape (3,)
@@ -495,7 +559,14 @@ class PyVQF:
         if mag is not None:
             self.updateMag(mag)
 
-    def updateBatch(self, gyr, acc, mag=None):
+    @overload
+    def updateBatch(self, gyr: np.ndarray, acc: np.ndarray, mag: np.ndarray) -> PyVQFBatchResults9D: ...
+
+    @overload
+    def updateBatch(self, gyr: np.ndarray, acc: np.ndarray, mag: None = None) -> PyVQFBatchResults6D: ...
+
+    def updateBatch(self, gyr: np.ndarray, acc: np.ndarray,
+                    mag: np.ndarray | None = None) -> PyVQFBatchResults:
         """Performs batch update for multiple samples at once.
 
         In order to use this function, all input data must have the same sampling rate and be provided as a
@@ -539,17 +610,17 @@ class PyVQF:
                 outBias[i], outBiasSigma[i] = self.getBiasEstimate()
                 outRest[i] = self._state.restDetected
                 outMagDist[i] = self._state.magDistDetected
-            return dict(quat6D=out6D, quat9D=out9D, delta=outDelta, bias=outBias, biasSigma=outBiasSigma,
-                        restDetected=outRest, magDistDetected=outMagDist)
+            return {'quat6D': out6D, 'quat9D': out9D, 'delta': outDelta, 'bias': outBias, 'biasSigma': outBiasSigma,
+                    'restDetected': outRest, 'magDistDetected': outMagDist}
         else:
             for i in range(N):
                 self.update(gyr[i], acc[i])
                 out6D[i] = self.getQuat6D()
                 outBias[i], outBiasSigma[i] = self.getBiasEstimate()
                 outRest[i] = self._state.restDetected
-            return dict(quat6D=out6D, bias=outBias, biasSigma=outBiasSigma, restDetected=outRest)
+            return {'quat6D': out6D, 'bias': outBias, 'biasSigma': outBiasSigma, 'restDetected': outRest}
 
-    def getQuat3D(self):
+    def getQuat3D(self) -> np.ndarray:
         r"""Returns the angular velocity strapdown integration quaternion
         :math:`^{\mathcal{S}_i}_{\mathcal{I}_i}\mathbf{q}`.
 
@@ -557,7 +628,7 @@ class PyVQF:
         """
         return self._state.gyrQuat.copy()
 
-    def getQuat6D(self):
+    def getQuat6D(self) -> np.ndarray:
         r"""Returns the 6D (magnetometer-free) orientation quaternion
         :math:`^{\mathcal{S}_i}_{\mathcal{E}_i}\mathbf{q}`.
 
@@ -565,7 +636,7 @@ class PyVQF:
         """
         return self.quatMultiply(self._state.accQuat, self._state.gyrQuat)
 
-    def getQuat9D(self):
+    def getQuat9D(self) -> np.ndarray:
         r"""Returns the 9D (with magnetometers) orientation quaternion
         :math:`^{\mathcal{S}_i}_{\mathcal{E}}\mathbf{q}`.
 
@@ -573,7 +644,7 @@ class PyVQF:
         """
         return self.quatApplyDelta(self.quatMultiply(self._state.accQuat, self._state.gyrQuat), self._state.delta)
 
-    def getDelta(self):
+    def getDelta(self) -> float:
         r""" Returns the heading difference :math:`\delta` between :math:`\mathcal{E}_i` and :math:`\mathcal{E}`.
 
         :math:`^{\mathcal{E}_i}_{\mathcal{E}}\mathbf{q} = \begin{bmatrix}\cos\frac{\delta}{2} & 0 & 0 &
@@ -583,7 +654,7 @@ class PyVQF:
         """
         return self._state.delta
 
-    def getBiasEstimate(self):
+    def getBiasEstimate(self) -> tuple[np.ndarray, float]:
         """Returns the current gyroscope bias estimate and the uncertainty.
 
         The returned standard deviation sigma represents the estimation uncertainty in the worst direction and is based
@@ -598,7 +669,7 @@ class PyVQF:
         sigma = np.sqrt(P)*np.pi/100.0/180.0
         return self._state.bias.copy(), sigma
 
-    def setBiasEstimate(self, bias, sigma):
+    def setBiasEstimate(self, bias: np.ndarray, sigma: float) -> None:
         """Sets the current gyroscope bias estimate and the uncertainty.
 
         If a value for the uncertainty sigma is given, the covariance matrix is set to a corresponding scaled identity
@@ -613,15 +684,15 @@ class PyVQF:
         if sigma > 0:
             self._state.biasP = (sigma*180.0*100.0/np.pi)**2 * np.eye(3)
 
-    def getRestDetected(self):
+    def getRestDetected(self) -> bool:
         """Returns true if rest was detected."""
         return self._state.restDetected
 
-    def getMagDistDetected(self):
+    def getMagDistDetected(self) -> bool:
         """Returns true if a disturbed magnetic field was detected."""
         return self._state.magDistDetected
 
-    def getRelativeRestDeviations(self):
+    def getRelativeRestDeviations(self) -> np.ndarray:
         """Returns the relative deviations used in rest detection.
 
          Looking at those values can be useful to understand how rest detection is working and which thresholds are
@@ -635,15 +706,15 @@ class PyVQF:
             np.sqrt(self._state.restLastSquaredDeviations[1]) / self._params.restThAcc,
         ], float)
 
-    def getMagRefNorm(self):
+    def getMagRefNorm(self) -> float:
         """Returns the norm of the currently accepted magnetic field reference."""
         return self._state.magRefNorm
 
-    def getMagRefDip(self):
+    def getMagRefDip(self) -> float:
         """Returns the dip angle of the currently accepted magnetic field reference."""
         return self._state.magRefDip
 
-    def setMagRef(self, norm, dip):
+    def setMagRef(self, norm: float, dip: float) -> None:
         """Overwrites the current magnetic field reference.
 
         :param norm: norm of the magnetic field reference
@@ -652,7 +723,7 @@ class PyVQF:
         self._state.magRefNorm = norm
         self._state.magRefDip = dip
 
-    def setTauAcc(self, tauAcc):
+    def setTauAcc(self, tauAcc: float) -> None:
         r"""Sets the time constant for accelerometer low-pass filtering.
 
         For more details, see :cpp:member:`VQFParams::tauAcc`.
@@ -676,7 +747,7 @@ class PyVQF:
         self._coeffs.accLpB = newB
         self._coeffs.accLpA = newA
 
-    def setTauMag(self, tauMag):
+    def setTauMag(self, tauMag: float) -> None:
         r"""Sets the time constant for the magnetometer update.
 
         For more details, see :cpp:member:`VQFParams::tauMag`.
@@ -686,7 +757,7 @@ class PyVQF:
         self._params.tauMag = tauMag
         self._coeffs.kMag = self.gainFromTau(self._params.tauMag, self._coeffs.magTs)
 
-    def setMotionBiasEstEnabled(self, enabled):
+    def setMotionBiasEstEnabled(self, enabled: bool) -> None:
         """Enables/disabled gyroscope bias estimation during motion."""
         if self._params.motionBiasEstEnabled == enabled:
             return
@@ -694,7 +765,7 @@ class PyVQF:
         self._state.motionBiasEstRLpState = np.full((2, 9), np.nan, float)
         self._state.motionBiasEstBiasLpState = np.full((2, 2), np.nan, float)
 
-    def setRestBiasEstEnabled(self, enabled):
+    def setRestBiasEstEnabled(self, enabled: bool) -> None:
         """Enables/disables rest detection and bias estimation during rest."""
         if self._params.restBiasEstEnabled == enabled:
             return
@@ -707,7 +778,7 @@ class PyVQF:
         self._state.restLastAccLp = np.zeros(3, float)
         self._state.restAccLpState = np.full((2, 3), np.nan, float)
 
-    def setMagDistRejectionEnabled(self, enabled):
+    def setMagDistRejectionEnabled(self, enabled: bool) -> None:
         """Enables/disables magnetic disturbance detection and rejection."""
         if self._params.magDistRejectionEnabled == enabled:
             return
@@ -723,7 +794,7 @@ class PyVQF:
         self._state.magNormDip = np.zeros(2, float)
         self._state.magNormDipLpState = np.full((2, 2), np.nan, float)
 
-    def setRestDetectionThresholds(self, thGyr, thAcc):
+    def setRestDetectionThresholds(self, thGyr: float, thAcc: float) -> None:
         """Sets the current thresholds for rest detection.
 
         :param thGyr: new value for :cpp:member:`VQFParams::restThGyr`
@@ -733,23 +804,23 @@ class PyVQF:
         self._params.restThAcc = thAcc
 
     @property
-    def params(self):
+    def params(self) -> PyVQFParams:
         """Read-only property to access the current parameters.
 
-        :return: dict with entries corresponding to :cpp:struct:`VQFParams`
+        :return: dataclass with fields corresponding to :cpp:struct:`VQFParams`
         """
         return copy.deepcopy(self._params)
 
     @property
-    def coeffs(self):
+    def coeffs(self) -> PyVQFCoefficients:
         """Read-only property to access the coefficients used by the algorithm.
 
-        :return: dict with entries corresponding to :cpp:struct:`VQFCoefficients`
+        :return: dataclass with fields corresponding to :cpp:struct:`VQFCoefficients`
         """
         return copy.deepcopy(self._coeffs)
 
     @property
-    def state(self):
+    def state(self) -> PyVQFStateDict:
         """Property to access the current state.
 
         This property can be written to in order to set a completely arbitrary filter state, which is intended for
@@ -766,10 +837,10 @@ class PyVQF:
 
         :return: dict with entries corresponding to :cpp:struct:`VQFState`
         """
-        return dataclasses.asdict(self._state)
+        return cast(PyVQFStateDict, dataclasses.asdict(self._state))
 
     @state.setter
-    def state(self, state):
+    def state(self, state: PyVQFStateDict) -> None:
         assert state.keys() == {f.name for f in dataclasses.fields(PyVQFState)}
         for k in state:
             assert isinstance(state[k], type(getattr(self._state, k)))
@@ -778,7 +849,7 @@ class PyVQF:
                 assert state[k].shape == getattr(self._state, k).shape
         self._state = PyVQFState(**copy.deepcopy(state))
 
-    def resetState(self):
+    def resetState(self) -> None:
         """Resets the state to the default values at initialization.
 
         Resetting the state is equivalent to creating a new instance of this class.
@@ -788,7 +859,7 @@ class PyVQF:
         self._state.magRejectT = self._params.magMaxRejectionTime
 
     @staticmethod
-    def quatMultiply(q1, q2):
+    def quatMultiply(q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
         r"""Performs quaternion multiplication (:math:`\mathbf{q}_\mathrm{out} = \mathbf{q}_1 \otimes \mathbf{q}_2`).
 
         :param q1: input quaternion 1 -- numpy array with shape (4,)
@@ -806,7 +877,7 @@ class PyVQF:
         return np.array([w, x, y, z], float)
 
     @staticmethod
-    def quatConj(q):
+    def quatConj(q: np.ndarray) -> np.ndarray:
         r"""Calculates the quaternion conjugate (:math:`\mathbf{q}_\mathrm{out} = \mathbf{q}^*`).
 
         :param q: input quaternion -- numpy array with shape (4,)
@@ -816,7 +887,7 @@ class PyVQF:
         return np.array([q[0], -q[1], -q[2], -q[3]], float)
 
     @staticmethod
-    def quatApplyDelta(q, delta):
+    def quatApplyDelta(q: np.ndarray, delta: float) -> np.ndarray:
         r""" Applies a heading rotation by the angle delta (in rad) to a quaternion.
 
         :math:`\mathbf{q}_\mathrm{out} = \begin{bmatrix}\cos\frac{\delta}{2} & 0 & 0 &
@@ -836,7 +907,7 @@ class PyVQF:
         return np.array([w, x, y, z], float)
 
     @staticmethod
-    def quatRotate(q, v):
+    def quatRotate(q: np.ndarray, v: np.ndarray) -> np.ndarray:
         r"""Rotates a vector with a given quaternion.
 
         :math:`\begin{bmatrix}0 & \mathbf{v}_\mathrm{out}\end{bmatrix}
@@ -856,7 +927,7 @@ class PyVQF:
         return np.array([x, y, z], float)
 
     @staticmethod
-    def normalize(vec):
+    def normalize(vec: np.ndarray) -> None:
         """Normalizes a vector in-place.
 
         :param vec: vector -- one-dimensional numpy array that will be normalized in-place
@@ -867,7 +938,7 @@ class PyVQF:
             vec /= norm
 
     @staticmethod
-    def gainFromTau(tau, Ts):
+    def gainFromTau(tau: float, Ts: float) -> float:
         r"""Calculates the gain for a first-order low-pass filter from the 1/e time constant.
 
         :math:`k = 1 - \exp\left(-\frac{T_\mathrm{s}}{\tau}\right)`
@@ -888,7 +959,7 @@ class PyVQF:
             return 1 - np.exp(-Ts/tau)  # fc = 1/(2*pi*tau)
 
     @staticmethod
-    def filterCoeffs(tau, Ts):
+    def filterCoeffs(tau: float, Ts: float) -> tuple[np.ndarray, np.ndarray]:
         r"""Calculates coefficients for a second-order Butterworth low-pass filter.
 
         The filter is parametrized via the time constant of the dampened, non-oscillating part of step response and the
@@ -923,7 +994,7 @@ class PyVQF:
         return np.array([b0, b1, b2], float), np.array([a1, a2], float)
 
     @staticmethod
-    def filterInitialState(x0, b, a):
+    def filterInitialState(x0: float, b: np.ndarray, a: np.ndarray) -> np.ndarray:
         r"""Calculates the initial filter state for a given steady-state value.
 
         :param x0: steady state value
@@ -941,7 +1012,12 @@ class PyVQF:
         ], float)
 
     @staticmethod
-    def filterAdaptStateForCoeffChange(last_y, b_old, a_old, b_new, a_new, state):
+    def filterAdaptStateForCoeffChange(last_y: np.ndarray,
+                                       b_old: np.ndarray,
+                                       a_old: np.ndarray,
+                                       b_new: np.ndarray,
+                                       a_new: np.ndarray,
+                                       state: np.ndarray) -> None:
         r"""Adjusts the filter state when changing coefficients.
 
         This function assumes that the filter is currently in a steady state, i.e. the last input values and the last
@@ -971,7 +1047,7 @@ class PyVQF:
         state[1] = state[1] + (b_old[1] - b_new[1] - a_old[0] + a_new[0])*last_y
 
     @staticmethod
-    def filterStep(x, b, a, state):
+    def filterStep(x: np.ndarray, b: np.ndarray, a: np.ndarray, state: np.ndarray) -> np.ndarray:
         r"""Performs a filter step.
 
         Note: Unlike the C++ implementation, this function is vectorized and can process multiple values at once.
@@ -998,7 +1074,12 @@ class PyVQF:
         return y
 
     @staticmethod
-    def filterVec(x, tau, Ts, b, a, state):
+    def filterVec(x: np.ndarray,
+                  tau: float,
+                  Ts: float,
+                  b: np.ndarray,
+                  a: np.ndarray,
+                  state: np.ndarray) -> np.ndarray:
         r"""Performs filter step for vector-valued signal with averaging-based initialization.
 
         During the first :math:`\tau` seconds, the filter output is the mean of the previous samples. At :math:`t=\tau`,
@@ -1038,7 +1119,7 @@ class PyVQF:
 
         return PyVQF.filterStep(x, b, a, state)
 
-    def _setup(self):
+    def _setup(self) -> None:
         """Calculates coefficients based on parameters and sampling rates."""
         coeffs = self._coeffs
         params = self._params

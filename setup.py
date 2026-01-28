@@ -51,7 +51,7 @@ setup(
     zip_safe=False,
 
     install_requires=['numpy >= 1.20.0'],
-    python_requires='>=3.7',  # needed for dataclasses in PyVQF
+    python_requires='>=3.10',
     extras_require={
         # pip3 install --user -e ".[dev]"
         'dev': ['tox', 'pytest', 'flake8',

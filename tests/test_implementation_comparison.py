@@ -21,7 +21,7 @@ def assertBatchOutEqual(out, ref, basic=False, noMag=False):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'BasicVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_updateGyr(cls, imu_data):
+def test_updateGyr(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -35,7 +35,7 @@ def test_updateGyr(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'BasicVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_updateBatch_basic(cls, imu_data):
+def test_updateBatch_basic(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -53,7 +53,7 @@ def test_updateBatch_basic(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_updateBatch(cls, imu_data):
+def test_updateBatch(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -67,7 +67,7 @@ def test_updateBatch(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_updateBatch_startInMotion(cls, imu_data):
+def test_updateBatch_startInMotion(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -81,7 +81,7 @@ def test_updateBatch_startInMotion(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_updateBatch_6D(cls, imu_data):
+def test_updateBatch_6D(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -95,7 +95,7 @@ def test_updateBatch_6D(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'PyVQF', 'BasicVQF'], indirect=True)
-def test_setState(cls, imu_data):
+def test_setState(cls: type[VQF], imu_data):
     vqf = cls(1 / imu_data.sampling_rate)
     ref = vqf.updateBatch(imu_data.gyr[3000:3200], imu_data.acc[3000:3200], imu_data.mag[3000:3200])
     ref_state = vqf.state
@@ -117,7 +117,7 @@ def test_setState(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_getSetBiasEstimate(cls, imu_data):
+def test_getSetBiasEstimate(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -143,7 +143,7 @@ def test_getSetBiasEstimate(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_getBiasEstimate_sigma_clip(cls, imu_data):
+def test_getBiasEstimate_sigma_clip(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -162,7 +162,7 @@ def test_getBiasEstimate_sigma_clip(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_getRelativeRestDeviations(cls, imu_data):
+def test_getRelativeRestDeviations(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -179,7 +179,7 @@ def test_getRelativeRestDeviations(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_getSetMagRef(cls, imu_data):
+def test_getSetMagRef(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -207,7 +207,7 @@ def test_getSetMagRef(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_setMotionBiasEstEnabled(cls, imu_data):
+def test_setMotionBiasEstEnabled(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -231,7 +231,7 @@ def test_setMotionBiasEstEnabled(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_setRestBiasEstEnabled(cls, imu_data):
+def test_setRestBiasEstEnabled(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -257,7 +257,7 @@ def test_setRestBiasEstEnabled(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_setMagDistRejectionEnabled(cls, imu_data):
+def test_setMagDistRejectionEnabled(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -284,7 +284,7 @@ def test_setMagDistRejectionEnabled(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_setTauAcc(cls, imu_data):
+def test_setTauAcc(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 
@@ -315,7 +315,7 @@ def test_setTauAcc(cls, imu_data):
 
 
 @pytest.mark.parametrize('cls', ['PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_setTauMag(cls, imu_data):
+def test_setTauMag(cls: type[VQF] | None, imu_data):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
 

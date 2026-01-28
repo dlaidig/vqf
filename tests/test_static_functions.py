@@ -6,9 +6,10 @@ import numpy as np
 import pytest
 import scipy.signal
 
-from vqf import PyVQF
+from vqf import VQF, PyVQF
 
-quats = [
+
+quats: list[list[float]] = [
     [1, 0, 0, 0],
     [0, -1, 0, 0],
     [0, 0, 1, 0],
@@ -19,7 +20,7 @@ quats = [
     [0.5, 0.5, -0.5, 0.5],
 ]
 
-matrices = [
+matrices: list[list[list[float]]] = [
     [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
     [[3, 0, 0], [0, 4, 0], [0, 0, 5]],
     [[0.1, 0.2, -0.15], [0.42, -0.01, 0.04], [0.02, -0.23, 0.18]],
@@ -28,13 +29,13 @@ matrices = [
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-@pytest.mark.parametrize('q1', quats)
-@pytest.mark.parametrize('q2', quats)
-def test_quatMultiply(cls, q1, q2):
+@pytest.mark.parametrize('q1Vals', quats)
+@pytest.mark.parametrize('q2Vals', quats)
+def test_quatMultiply(cls: type[VQF] | None, q1Vals, q2Vals):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
-    q1 = np.array(q1, float)
-    q2 = np.array(q2, float)
+    q1 = np.array(q1Vals, float)
+    q2 = np.array(q2Vals, float)
     out = cls.quatMultiply(q1, q2)
     ref = np.array([
         q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3],
@@ -46,20 +47,20 @@ def test_quatMultiply(cls, q1, q2):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-@pytest.mark.parametrize('q', quats)
-def test_quatConj(cls, q):
+@pytest.mark.parametrize('qVals', quats)
+def test_quatConj(cls: type[VQF] | None, qVals):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
-    q = np.array(q, float)
+    q = np.array(qVals, float)
     out = cls.quatConj(q)
     ref = np.array([q[0], -q[1], -q[2], -q[3]], float)
     np.testing.assert_almost_equal(out, ref)
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF'], indirect=True)
-@pytest.mark.parametrize('q', quats)
-def test_quatSetToIdentity(cls, q):
-    q = np.array(q, float)
+@pytest.mark.parametrize('qVals', quats)
+def test_quatSetToIdentity(cls: type[VQF], qVals):
+    q = np.array(qVals, float)
     cls.quatSetToIdentity(q)
     ref = np.array([1, 0, 0, 0], float)
     np.testing.assert_almost_equal(q, ref)
@@ -68,7 +69,7 @@ def test_quatSetToIdentity(cls, q):
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
 @pytest.mark.parametrize('q', quats)
 @pytest.mark.parametrize('delta', np.deg2rad([0, -17, 180, 421]))
-def test_quatApplyDelta(cls, q, delta):
+def test_quatApplyDelta(cls: type[VQF] | None, q, delta):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     q = np.array(q, float)
@@ -78,33 +79,33 @@ def test_quatApplyDelta(cls, q, delta):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-@pytest.mark.parametrize('q', quats)
-@pytest.mark.parametrize('v', [[1, 0, 0], [0, 1, 0], [0, 0, 1], [-1, 2, -3]])
-def test_quatRotate(cls, q, v):
+@pytest.mark.parametrize('qVals', quats)
+@pytest.mark.parametrize('vVals', [[1, 0, 0], [0, 1, 0], [0, 0, 1], [-1, 2, -3]])
+def test_quatRotate(cls: type[VQF] | None, qVals, vVals):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
-    q = np.array(q, float)
-    v = np.array(v, float)
+    q = np.array(qVals, float)
+    v = np.array(vVals, float)
     out = cls.quatRotate(q, v)
     ref = cls.quatMultiply(q, cls.quatMultiply(np.concatenate([[0.0], v]), cls.quatConj(q)))
     np.testing.assert_almost_equal(out, ref[1:])
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF'], indirect=True)
-@pytest.mark.parametrize('vec', [[2], [-1, 2], [1, 2, 3], [1, 2, 3, 0], [-1, -2, -3, -4, -5], [0, 0, 0]])
-def test_norm(cls, vec):
-    vec = np.array(vec, float)
+@pytest.mark.parametrize('vecVals', [[2], [-1, 2], [1, 2, 3], [1, 2, 3, 0], [-1, -2, -3, -4, -5], [0, 0, 0]])
+def test_norm(cls: type[VQF], vecVals):
+    vec = np.array(vecVals, float)
     out = cls.norm(vec)
     ref = np.linalg.norm(vec)
     np.testing.assert_almost_equal(out, ref)
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-@pytest.mark.parametrize('vec', [[2], [-1, 2], [1, 2, 3], [1, 2, 3, 0], [-1, -2, -3, -4, -5]])
-def test_normalize(cls, vec):
+@pytest.mark.parametrize('vecVals', [[2], [-1, 2], [1, 2, 3], [1, 2, 3, 0], [-1, -2, -3, -4, -5]])
+def test_normalize(cls: type[VQF] | None, vecVals):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
-    vec = np.array(vec, float)
+    vec = np.array(vecVals, float)
     ref = vec/np.linalg.norm(vec)
     out = cls.normalize(vec)
     if out is None:
@@ -113,11 +114,11 @@ def test_normalize(cls, vec):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-@pytest.mark.parametrize('vec', [[0], [0, 0], [0, 0, 0], [0, 0, 0, 0]])
-def test_normalize_zeroinput(cls, vec):
+@pytest.mark.parametrize('vecVals', [[0], [0, 0], [0, 0, 0], [0, 0, 0, 0]])
+def test_normalize_zeroinput(cls: type[VQF] | None, vecVals):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
-    vec = np.array(vec, float)
+    vec = np.array(vecVals, float)
     ref = vec.copy()
     out = cls.normalize(vec)
     if out is None:
@@ -126,7 +127,7 @@ def test_normalize_zeroinput(cls, vec):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_clip(cls):
+def test_clip(cls: type[VQF] | None):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     vec = np.array([-1, 0.5, -5, 0.4, -2, -4, 5, 7, 12, 1, 0.2, 2, 3, 5], float)
@@ -140,7 +141,7 @@ def test_clip(cls):
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
 @pytest.mark.parametrize('tau', [0.1, 1.0, 10.0])
 @pytest.mark.parametrize('Ts', [0.01, 0.001])
-def test_gainFromTau(cls, tau, Ts):
+def test_gainFromTau(cls: type[VQF] | None, tau, Ts):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     ref = 1 - np.exp(-Ts/tau)
@@ -150,7 +151,7 @@ def test_gainFromTau(cls, tau, Ts):
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
 @pytest.mark.parametrize('Ts', [0.01, 0.001])
-def test_gainFromTau_zero(cls, Ts):
+def test_gainFromTau_zero(cls: type[VQF] | None, Ts):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     out = cls.gainFromTau(0.0, Ts)
@@ -159,7 +160,7 @@ def test_gainFromTau_zero(cls, Ts):
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
 @pytest.mark.parametrize('Ts', [0.01, 0.001])
-def test_gainFromTau_negative(cls, Ts):
+def test_gainFromTau_negative(cls: type[VQF] | None, Ts):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     out = cls.gainFromTau(-1.0, Ts)
@@ -169,20 +170,22 @@ def test_gainFromTau_negative(cls, Ts):
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
 @pytest.mark.parametrize('tau', [0.1, 1.0, 10.0])
 @pytest.mark.parametrize('Ts', [0.01, 0.001])
-def test_filterCoeffs(cls, tau, Ts):
+def test_filterCoeffs(cls: type[VQF] | None, tau, Ts):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     outB, outA = cls.filterCoeffs(tau, Ts)
     fc = np.sqrt(2) / (2 * np.pi * tau)
     Wn = fc / (1/Ts/2)
-    refB, refA = scipy.signal.butter(2, Wn)
+    refB: np.ndarray
+    refA: np.ndarray
+    refB, refA = scipy.signal.butter(2, Wn)  # type: ignore
     np.testing.assert_almost_equal(outB, refB)
     np.testing.assert_almost_equal(outA, refA[1:])
     assert refA[0] == 1.0
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_filterCoeffs_passthrough(cls):
+def test_filterCoeffs_passthrough(cls: type[VQF] | None):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     outB, outA = cls.filterCoeffs(0.004, 0.01)
@@ -195,7 +198,7 @@ def test_filterCoeffs_passthrough(cls):
 @pytest.mark.parametrize('tau', [0.1, 1.0, 10.0])
 @pytest.mark.parametrize('Ts', [0.01, 0.001])
 @pytest.mark.parametrize('x0', [1.0, 10.0])
-def test_filterInitialState(cls, tau, Ts, x0):
+def test_filterInitialState(cls: type[VQF] | None, tau, Ts, x0):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     b, a = cls.filterCoeffs(tau, Ts)
@@ -205,7 +208,7 @@ def test_filterInitialState(cls, tau, Ts, x0):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_filterVec(cls):
+def test_filterVec(cls: type[VQF] | None):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     tau = 1.0
@@ -228,7 +231,7 @@ def test_filterVec(cls):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_filterVec_init(cls):
+def test_filterVec_init(cls: type[VQF] | None):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     tau = 1.0
@@ -259,7 +262,7 @@ def test_filterVec_init(cls):
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
-def test_filterVec_passthrough(cls):
+def test_filterVec_passthrough(cls: type[VQF] | None):
     if cls is None:
         pytest.skip('--nomatlab and/or --nooctave is set')
     tau = 0.004  # tau < Ts/2 = 0.005 triggers passthrough
@@ -281,50 +284,50 @@ def test_filterVec_passthrough(cls):
 
 
 @pytest.mark.parametrize('cls', ['VQF'], indirect=True)
-@pytest.mark.parametrize('mat', matrices)
-def test_matrix3SetToScaledIdentity(cls, mat):
-    mat = np.array(mat, float)
+@pytest.mark.parametrize('matVals', matrices)
+def test_matrix3SetToScaledIdentity(cls: type[VQF], matVals):
+    mat = np.array(matVals, float)
     cls.matrix3SetToScaledIdentity(3, mat)
     np.testing.assert_almost_equal(mat, 3*np.eye(3))
 
 
 @pytest.mark.parametrize('cls', ['VQF'], indirect=True)
-@pytest.mark.parametrize('mat1', matrices)
-@pytest.mark.parametrize('mat2', matrices)
-def test_matrix3Multiply(cls, mat1, mat2):
-    mat1 = np.array(mat1, float)
-    mat2 = np.array(mat2, float)
+@pytest.mark.parametrize('mat1Vals', matrices)
+@pytest.mark.parametrize('mat2Vals', matrices)
+def test_matrix3Multiply(cls: type[VQF], mat1Vals, mat2Vals):
+    mat1 = np.array(mat1Vals, float)
+    mat2 = np.array(mat2Vals, float)
     out = cls.matrix3Multiply(mat1, mat2)
     ref = mat1 @ mat2
     np.testing.assert_almost_equal(out, ref)
 
 
 @pytest.mark.parametrize('cls', ['VQF'], indirect=True)
-@pytest.mark.parametrize('mat1', matrices)
-@pytest.mark.parametrize('mat2', matrices)
-def test_matrix3MultiplyTpsFirst(cls, mat1, mat2):
-    mat1 = np.array(mat1, float)
-    mat2 = np.array(mat2, float)
+@pytest.mark.parametrize('mat1Vals', matrices)
+@pytest.mark.parametrize('mat2Vals', matrices)
+def test_matrix3MultiplyTpsFirst(cls: type[VQF], mat1Vals, mat2Vals):
+    mat1 = np.array(mat1Vals, float)
+    mat2 = np.array(mat2Vals, float)
     out = cls.matrix3MultiplyTpsFirst(mat1, mat2)
     ref = mat1.T @ mat2
     np.testing.assert_almost_equal(out, ref)
 
 
 @pytest.mark.parametrize('cls', ['VQF'], indirect=True)
-@pytest.mark.parametrize('mat1', matrices)
-@pytest.mark.parametrize('mat2', matrices)
-def test_matrix3MultiplyTpsSecond(cls, mat1, mat2):
-    mat1 = np.array(mat1, float)
-    mat2 = np.array(mat2, float)
+@pytest.mark.parametrize('mat1Vals', matrices)
+@pytest.mark.parametrize('mat2Vals', matrices)
+def test_matrix3MultiplyTpsSecond(cls: type[VQF], mat1Vals, mat2Vals):
+    mat1 = np.array(mat1Vals, float)
+    mat2 = np.array(mat2Vals, float)
     out = cls.matrix3MultiplyTpsSecond(mat1, mat2)
     ref = mat1 @ mat2.T
     np.testing.assert_almost_equal(out, ref)
 
 
 @pytest.mark.parametrize('cls', ['VQF'], indirect=True)
-@pytest.mark.parametrize('mat', matrices)
-def test_matrix3Inv(cls, mat):
-    mat = np.array(mat, float)
+@pytest.mark.parametrize('matVals', matrices)
+def test_matrix3Inv(cls: type[VQF], matVals):
+    mat = np.array(matVals, float)
     success, out = cls.matrix3Inv(mat)
     ref = np.linalg.inv(mat)
     assert success
