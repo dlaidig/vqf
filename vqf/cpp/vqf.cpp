@@ -11,8 +11,8 @@
 
 #define EPS std::numeric_limits<vqf_real_t>::epsilon()
 #define NaN std::numeric_limits<vqf_real_t>::quiet_NaN()
-#define PI vqf_real_t(3.14159265358979323846264338327950288)
-#define SQRT2 vqf_real_t(1.41421356237309504880168872420969808)
+#define PI 3.14159265358979323846264338327950288
+#define SQRT2 1.41421356237309504880168872420969808
 
 inline vqf_real_t square(vqf_real_t x) { return x*x; }
 

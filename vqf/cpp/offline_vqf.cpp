@@ -11,7 +11,7 @@
 
 #define EPS std::numeric_limits<vqf_real_t>::epsilon()
 #define NaN std::numeric_limits<vqf_real_t>::quiet_NaN()
-#define PI vqf_real_t(3.14159265358979323846264338327950288)
+#define PI 3.14159265358979323846264338327950288
 
 
 void matrix3MultiplyVec(const vqf_real_t inR[9], const vqf_real_t inV[9], vqf_real_t out[3])
