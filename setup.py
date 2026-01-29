@@ -26,7 +26,7 @@ for m in ext_modules:
 
 setup(
     name='vqf',
-    version='2.0.1',
+    version='2.1.0',
 
     description='A Versatile Quaternion-based Filter for IMU Orientation Estimation',
     long_description=open('README.rst').read(),
