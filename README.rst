@@ -19,6 +19,10 @@ without magnetometer data. Different sampling rates for gyroscopes, acceleromete
 supported as well. While in most cases, the defaults will be reasonable, the algorithm can be influenced via two
 tuning parameters.
 
+**Note:** VQF has been integrated into the `Capture2Go IMU <https://capture2go.com/>`__ by
+`SensorStim Neurotechnology GmbH <https://sensorstim.de/>`__, the employer of the algorithm's author.
+For more information on this wireless motion sensor, please visit `the product page <https://capture2go.com/>`__.
+
 Documentation
 -------------
 
