@@ -552,7 +552,7 @@ void VQF::setRestBiasEstEnabled(bool enabled)
     }
     params.restBiasEstEnabled = enabled;
     state.restDetected = false;
-    std::fill(state.restLastSquaredDeviations, state.restLastSquaredDeviations + 3, 0.0);
+    std::fill(state.restLastSquaredDeviations, state.restLastSquaredDeviations + 2, 0.0);
     state.restT = 0.0;
     std::fill(state.restLastGyrLp, state.restLastGyrLp + 3, 0.0);
     std::fill(state.restGyrLpState, state.restGyrLpState + 3*2, NaN);
@@ -669,7 +669,7 @@ void VQF::resetState()
     std::fill(state.motionBiasEstBiasLpState, state.motionBiasEstBiasLpState + 2*2, NaN);
 #endif
 
-    std::fill(state.restLastSquaredDeviations, state.restLastSquaredDeviations + 3, 0.0);
+    std::fill(state.restLastSquaredDeviations, state.restLastSquaredDeviations + 2, 0.0);
     state.restT = 0.0;
     std::fill(state.restLastGyrLp, state.restLastGyrLp + 3, 0.0);
     std::fill(state.restGyrLpState, state.restGyrLpState + 3*2, NaN);
