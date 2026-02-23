@@ -771,7 +771,7 @@ class PyVQF:
             return
         self._params.restBiasEstEnabled = enabled
         self._state.restDetected = False
-        self._state.restLastSquaredDeviations = np.zeros(3, float)
+        self._state.restLastSquaredDeviations = np.zeros(2, float)
         self._state.restT = 0.0
         self._state.restLastGyrLp = np.zeros(3, float)
         self._state.restGyrLpState = np.full((2, 3), np.nan, float)

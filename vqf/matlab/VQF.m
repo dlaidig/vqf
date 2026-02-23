@@ -142,7 +142,7 @@ classdef VQF < handle
             'biasP', NaN(3, 3), ...))
             'motionBiasEstRLpState', NaN(2, 9), ...
             'motionBiasEstBiasLpState', NaN(2, 2), ...
-            'restLastSquaredDeviations', [0 0 0], ...
+            'restLastSquaredDeviations', [0 0], ...
             'restT', 0.0, ...
             'restLastGyrLp', [0 0 0], ...
             'restGyrLpState', NaN(2, 3), ...
@@ -739,7 +739,7 @@ classdef VQF < handle
             end
             obj.params.restBiasEstEnabled = enabled;
             obj.state.restDetected = false;
-            obj.state.restLastSquaredDeviations = [0 0 0];
+            obj.state.restLastSquaredDeviations = [0 0];
             obj.state.restT = 0.0;
             obj.state.restLastGyrLp = [0 0 0];
             obj.state.restGyrLpState = NaN(2, 3);
@@ -796,7 +796,7 @@ classdef VQF < handle
             obj.state.motionBiasEstRLpState = NaN(2, 9);
             obj.state.motionBiasEstBiasLpState = NaN(2, 2);
 
-            obj.state.restLastSquaredDeviations = [0 0 0];
+            obj.state.restLastSquaredDeviations = [0 0];
             obj.state.restT = 0.0;
             obj.state.restLastGyrLp = [0 0 0];
             obj.state.restGyrLpState = NaN(2, 3);
