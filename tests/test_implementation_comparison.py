@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 import numpy as np
 import pytest
+from dataclasses import asdict, is_dataclass
 
 from vqf import VQF, BasicVQF, offlineVQF
 
@@ -92,6 +93,30 @@ def test_updateBatch_6D(cls: type[VQF] | None, imu_data):
     ref = vqf_ref.updateBatch(imu_data.gyr, imu_data.acc)
 
     assertBatchOutEqual(out, ref, noMag=True)
+
+
+@pytest.mark.parametrize('cls', ['BasicVQF', 'PyVQF', 'MatlabVQF', 'OctaveVQF'], indirect=True)
+def test_setup(cls: type[VQF] | None):
+    if cls is None:
+        pytest.skip('--nomatlab and/or --nooctave is set')
+
+    vqf = cls(1 / 200, 1 / 100, 1 / 50)
+    vqf_ref = VQF(1 / 200, 1 / 100, 1 / 50)
+
+    for attr in ('params', 'coeffs', 'state'):
+        out = getattr(vqf, attr)
+        if is_dataclass(out):  # PyVQF
+            out = asdict(out)
+        elif callable(out):  # MatlabVQF, OctaveVQF
+            out = out()
+        ref = getattr(vqf_ref, attr)
+        if cls != BasicVQF:
+            assert set(out.keys()) == set(ref.keys())
+        for k in ref:
+            if k in out:
+                value = out[k] if not isinstance(out[k], np.ndarray) else out[k].flatten()
+                ref_value = ref[k] if not isinstance(ref[k], np.ndarray) else ref[k].flatten()
+                np.testing.assert_allclose(value, ref_value, err_msg=f'Mismatch for key {k}', equal_nan=True)
 
 
 @pytest.mark.parametrize('cls', ['VQF', 'PyVQF', 'BasicVQF'], indirect=True)

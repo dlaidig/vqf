@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-07-09
+### Fixed
+- Fixed `accLp` coefficient calculation in Matlab implementation when different sampling rates are used (#39).
+- Fixed optional parameter logic in Matlab implementation of `setBiasEstimate`.
+
 ## [2.1.1] - 2026-02-23
 ### Fixed
 - Fixed out-of-bounds write to restLastSquaredDeviations (contributed by [DusKing1](https://github.com/DusKing1), see #37).
@@ -55,7 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release.
 
-[Unreleased]: https://github.com/dlaidig/vqf/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/dlaidig/vqf/compare/v2.1.2...HEAD
+[2.1.2]: https://github.com/dlaidig/vqf/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/dlaidig/vqf/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/dlaidig/vqf/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/dlaidig/vqf/compare/v2.0.0...v2.0.1

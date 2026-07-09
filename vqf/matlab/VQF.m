@@ -644,7 +644,7 @@ classdef VQF < handle
             %     not change the estimation covariance matrix
             assert(all(size(bias) == [1, 3]), 'b has wrong size');
             obj.state.bias = bias;
-            if nargin < 3 || sigma > 0
+            if nargin >= 3 && sigma > 0
                 assert(all(size(sigma) == [1, 1]), 'sigma has wrong size');
                 obj.state.biasP = (sigma*180.0*100.0/pi)^2 * eye(3);
             end
@@ -1048,7 +1048,7 @@ classdef VQF < handle
             assert(obj.coeffs.accTs > 0);
             assert(obj.coeffs.magTs > 0);
 
-            [obj.coeffs.accLpB, obj.coeffs.accLpA] = obj.filterCoeffs(obj.params.tauAcc, obj.coeffs.magTs);
+            [obj.coeffs.accLpB, obj.coeffs.accLpA] = obj.filterCoeffs(obj.params.tauAcc, obj.coeffs.accTs);
 
             obj.coeffs.kMag = obj.gainFromTau(obj.params.tauMag, obj.coeffs.magTs);
 
